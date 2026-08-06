@@ -24,6 +24,8 @@ export interface KeysetTableProps<T> {
   /** Rendered INSIDE the card as its header strip (v1.3 §9.1 as corrected): search,
       facets and utilities belong to the TABLE, not to the page above it. */
   toolbar?: ReactNode;
+  /** Strings-as-props (RFC D5); `loaded` composes the honest footer count. */
+  labels?: { error?: string; retry?: string; loadMore?: string; loading?: string; end?: string; loaded?: (count: number) => string };
 }
 
 /** AdminPaging.Clamp, mirrored — the UI never asks for what the API would refuse. */
@@ -39,7 +41,8 @@ type LoadState = "loading" | "idle" | "error";
  * numbers, NO total count (the contract deliberately never counts large tables).
  * Pages append; the walk ends when the API answers `nextCursor: null`.
  */
-export function KeysetTable<T>({ columns, loadPage, rowKey, take = 50, emptyMessage = "Nothing here yet.", toolbar }: KeysetTableProps<T>) {
+export function KeysetTable<T>({ columns, loadPage, rowKey, take = 50, emptyMessage = "Nothing here yet.", toolbar, labels = {} }: KeysetTableProps<T>) {
+  const text = { error: "The page could not be loaded.", retry: "retry", loadMore: "load more", loading: "loading…", end: "· end", loaded: (n: number) => `${n} loaded`, ...labels };
   // The journal's density feature (§9.3): one rhythm for every family table.
   const cell = densityCell(useDensity());
   const [rows, setRows] = useState<T[]>([]);
@@ -114,12 +117,12 @@ export function KeysetTable<T>({ columns, loadPage, rowKey, take = 50, emptyMess
       {state === "error" && (
         <div className="my-3">
           <Banner tone="danger">
-            The page could not be loaded.
+            {text.error}
             <button
-              className="btn-quiet ml-3 px-2 py-0.5 text-xs"
+              className="btn-quiet ms-3 px-2 py-0.5 text-xs"
               onClick={() => void fetchPage(rows.length === 0 ? null : cursor, rows.length === 0)}
             >
-              retry
+              {text.retry}
             </button>
           </Banner>
         </div>
@@ -128,7 +131,7 @@ export function KeysetTable<T>({ columns, loadPage, rowKey, take = 50, emptyMess
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 text-xs text-faint">
         <span className="text-xs text-faint">
           {/* The honest footer: what is LOADED — never a total (the offset trap reborn). */}
-          {rows.length} loaded{ended ? " · end" : ""}
+          {text.loaded(rows.length)}{ended ? ` ${text.end}` : ""}
         </span>
         {!ended && state !== "error" && (
           <button
@@ -136,7 +139,7 @@ export function KeysetTable<T>({ columns, loadPage, rowKey, take = 50, emptyMess
             disabled={state === "loading"}
             onClick={() => void fetchPage(cursor, false)}
           >
-            {state === "loading" ? "loading…" : "load more"}
+            {state === "loading" ? text.loading : text.loadMore}
           </button>
         )}
       </div>

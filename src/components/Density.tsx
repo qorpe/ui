@@ -53,13 +53,18 @@ export function densityCell(density: Density): string {
 }
 
 /** The toolbar's density control: the IconAction, saying which rhythm a press GIVES. */
-export function DensityToggle() {
+export function DensityToggle({
+  labels = {},
+}: {
+  /** Strings-as-props (RFC D5): what a press GIVES, per current rhythm. */
+  labels?: { comfortable?: string; compact?: string };
+} = {}) {
   const { density, toggle } = useContext(DensityContext);
   const compact = density === "compact";
   return (
     <IconAction
       icon={compact ? <Rows3 /> : <Rows2 />}
-      label={compact ? "Comfortable rows" : "Compact rows"}
+      label={compact ? (labels.comfortable ?? "Comfortable rows") : (labels.compact ?? "Compact rows")}
       onClick={toggle}
       pressed={compact}
     />

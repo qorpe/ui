@@ -6,6 +6,8 @@ export interface SearchBoxProps {
   /** Fired on Enter and on blur — the server is asked once per COMMIT, not per keystroke. */
   onCommit: (value: string) => void;
   placeholder?: string;
+  /** The clear button's accessible name (strings-as-props, RFC D5). */
+  clearLabel?: string;
   label: string;
 }
 
@@ -14,7 +16,7 @@ export interface SearchBoxProps {
  * SERVER-side through the existing filters — never a loaded page: filtering client-side
  * would read as "no matches" while more sat behind the take bound.
  */
-export function SearchBox({ value, onCommit, placeholder, label }: SearchBoxProps) {
+export function SearchBox({ value, onCommit, placeholder, label, clearLabel = "clear search" }: SearchBoxProps) {
   const [draft, setDraft] = useState(value);
   useEffect(() => setDraft(value), [value]);
 
@@ -35,7 +37,7 @@ export function SearchBox({ value, onCommit, placeholder, label }: SearchBoxProp
       {/* Always laid out, only VISIBLE with text: appearing beside the input would
           shift every neighbour to the right (§8.10). */}
       <button
-        aria-label="clear search"
+        aria-label={clearLabel}
         aria-hidden={draft.length === 0}
         tabIndex={draft.length > 0 ? 0 : -1}
         className={`shrink-0 text-muted-foreground transition-colors hover:text-foreground ${draft.length > 0 ? "visible" : "invisible"}`}

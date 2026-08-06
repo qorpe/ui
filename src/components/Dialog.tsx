@@ -8,6 +8,8 @@ export interface DialogProps {
   title: string;
   /** One line under the title — what this form DOES. */
   description?: string;
+  /** The close button's accessible name (strings-as-props, RFC D5). */
+  closeLabel?: string;
   children: ReactNode;
 }
 
@@ -16,7 +18,7 @@ export interface DialogProps {
  * add/edit forms open HERE, never at the bottom of the page. The Sheet stays the home
  * of ENTITY detail; the Dialog is the home of a decision or a form.
  */
-export function Dialog({ open, onOpenChange, title, description, children }: DialogProps) {
+export function Dialog({ open, onOpenChange, title, description, children, closeLabel }: DialogProps) {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
@@ -27,7 +29,7 @@ export function Dialog({ open, onOpenChange, title, description, children }: Dia
               <DialogPrimitive.Title className="text-base font-semibold">{title}</DialogPrimitive.Title>
               <ModalDescription description={description} title={title} className="mt-1.5 text-sm text-muted-foreground" />
             </div>
-            <ModalClose className="shrink-0" />
+            <ModalClose className="shrink-0" label={closeLabel} />
           </div>
           <div className="mt-4">{children}</div>
         </DialogPrimitive.Content>

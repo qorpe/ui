@@ -11,10 +11,10 @@ export function ModalOverlay() {
   return <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-overlay" />;
 }
 
-export function ModalClose({ className }: { className: string }) {
+export function ModalClose({ className, label = "close" }: { className: string; label?: string }) {
   return (
     <DialogPrimitive.Close
-      aria-label="close"
+      aria-label={label}
       className={`rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground ${className}`}
     >
       <X size={16} aria-hidden="true" />

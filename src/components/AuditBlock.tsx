@@ -16,6 +16,8 @@ export interface AuditBlockProps {
   entries: AuditEntry[];
   /** Property names whose values are classified — rendered masked, NEVER in the DOM. */
   classified?: string[];
+  /** Strings-as-props (RFC D5). */
+  labels?: { system?: string; classifiedTag?: string; maskedTitle?: string };
   emptyMessage?: string;
 }
 
@@ -28,9 +30,9 @@ export function isClassified(propertyName: string, classified: string[] | undefi
 
 const MASK = "••••••";
 
-function Value({ value, masked }: { value: string | null | undefined; masked: boolean }) {
+function Value({ value, masked, maskedTitle }: { value: string | null | undefined; masked: boolean; maskedTitle: string }) {
   if (masked) {
-    return <span className="font-mono text-xs text-faint" title="classified — masked by the console">{MASK}</span>;
+    return <span className="font-mono text-xs text-faint" title={maskedTitle}>{MASK}</span>;
   }
 
   if (value === null || value === undefined) {
@@ -46,7 +48,8 @@ function Value({ value, masked }: { value: string | null | undefined; masked: bo
  * already refuses to hand out classified values — so a misconfigured server can never
  * leak through the console's DOM.
  */
-export function AuditBlock({ entries, classified, emptyMessage = "No audited changes." }: AuditBlockProps) {
+export function AuditBlock({ entries, classified, emptyMessage = "No audited changes.", labels = {} }: AuditBlockProps) {
+  const text = { system: SYSTEM_ACTOR, classifiedTag: "(classified)", maskedTitle: "classified — masked by the console", ...labels };
   if (entries.length === 0) {
     return <p className="py-6 text-center text-sm text-muted-foreground">{emptyMessage}</p>;
   }
@@ -59,7 +62,7 @@ export function AuditBlock({ entries, classified, emptyMessage = "No audited cha
           <div key={entry.id} className="grid grid-cols-[auto_1fr] gap-x-4 rounded-md border border-border/60 px-3 py-2 text-sm">
             <div className="text-xs text-muted-foreground">
               <div>{new Date(entry.timestamp).toISOString().replace("T", " ").slice(0, 19)}</div>
-              <div className="text-faint">{entry.user ?? SYSTEM_ACTOR}</div>
+              <div className="text-faint">{entry.user ?? text.system}</div>
             </div>
             <div>
               <div className="flex flex-wrap items-baseline gap-x-2">
@@ -67,12 +70,12 @@ export function AuditBlock({ entries, classified, emptyMessage = "No audited cha
                 <span className="text-xs text-muted-foreground">
                   {entry.action} · {entry.entityType} {entry.entityKey}
                 </span>
-                {masked && <span className="text-xs text-faint">(classified)</span>}
+                {masked && <span className="text-xs text-faint">{text.classifiedTag}</span>}
               </div>
               <div className="mt-0.5 flex flex-wrap items-center gap-2">
-                <Value value={entry.oldValue} masked={masked} />
+                <Value value={entry.oldValue} masked={masked} maskedTitle={text.maskedTitle} />
                 <span className="text-xs text-faint">→</span>
-                <Value value={entry.newValue} masked={masked} />
+                <Value value={entry.newValue} masked={masked} maskedTitle={text.maskedTitle} />
               </div>
               {entry.correlationId && (
                 <div className="mt-0.5 font-mono text-[11px] text-faint">corr {entry.correlationId}</div>

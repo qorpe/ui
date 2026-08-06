@@ -62,7 +62,7 @@ export function TabStrip({ items, activeId, onSelect, label }: TabStripProps) {
             }}
           >
             {item.label}
-            {item.hint && <span className="ml-1.5 text-xs text-faint">{item.hint}</span>}
+            {item.hint && <span className="ms-1.5 text-xs text-faint">{item.hint}</span>}
           </button>
         );
       })}

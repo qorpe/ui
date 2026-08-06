@@ -35,6 +35,8 @@ export interface VerbButtonProps {
    * `onDone` — otherwise the operator's confirmation dies with the button.
    */
   quiet?: boolean;
+  /** Strings-as-props (RFC D5): the verb machine's own copy. */
+  labels?: { working?: string; audited?: string; cancel?: string; confirmName?: (label: string) => string; unreached?: string; unexpected?: (status: number) => string };
 }
 
 type Phase =
@@ -49,7 +51,8 @@ type Phase =
  * TEACH — the UI never paraphrases them), and the audit hint reminds the operator the
  * server records every verb (the actor comes from the token, never the UI).
  */
-export function VerbButton({ label, confirm, execute, onDone, destructive = false, note, quiet = false, icon, iconOnly = false }: VerbButtonProps) {
+export function VerbButton({ label, confirm, execute, onDone, destructive = false, note, quiet = false, icon, iconOnly = false, labels = {} }: VerbButtonProps) {
+  const text = { working: "working…", audited: "· audited", cancel: "cancel", confirmName: (l: string) => `confirm ${l}`, unreached: "the request did not reach the server — the verb may not have run", unexpected: (s: number) => `unexpected ${s} — check the service logs`, ...labels };
   const [phase, setPhase] = useState<Phase>({ at: "rest" });
   const dialog = useRef<HTMLSpanElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -91,7 +94,7 @@ export function VerbButton({ label, confirm, execute, onDone, destructive = fals
     return (
       <span
         role="alertdialog"
-        aria-label={`confirm ${label}`}
+        aria-label={text.confirmName(label)}
         // ESCAPE closes it. An operator who opened a destructive confirm by mistake must
         // be able to back out with the key every dialog on earth uses, without hunting
         // for a mouse (found by the a11y gate). Keyed on the wrapper so it works whether
@@ -107,7 +110,7 @@ export function VerbButton({ label, confirm, execute, onDone, destructive = fals
         className="inline-flex flex-wrap items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none"
       >
         <span>{confirm}</span>
-        <span className="text-xs text-faint">· audited</span>
+        <span className="text-xs text-faint">{text.audited}</span>
         {note && (
           <input
             aria-label={note.label}
@@ -125,7 +128,7 @@ export function VerbButton({ label, confirm, execute, onDone, destructive = fals
           {label}
         </button>
         <button className="btn-quiet px-2 py-0.5 text-xs" onClick={cancel}>
-          cancel
+          {text.cancel}
         </button>
       </span>
     );
@@ -142,7 +145,7 @@ export function VerbButton({ label, confirm, execute, onDone, destructive = fals
       onClick={() => setPhase({ at: "confirming" })}
     >
       {icon && <span aria-hidden="true" className="flex shrink-0 items-center [&>svg]:size-4">{icon}</span>}
-      {iconOnly ? null : phase.at === "executing" ? "working…" : label}
+      {iconOnly ? null : phase.at === "executing" ? text.working : label}
     </button>
   );
 
@@ -162,8 +165,8 @@ export function VerbButton({ label, confirm, execute, onDone, destructive = fals
       {!quiet && phase.at === "settled" && phase.outcome.kind === "error" && (
         <Banner tone="warning" dense>
           {phase.outcome.status === 0
-            ? "the request did not reach the server — the verb may not have run"
-            : `unexpected ${phase.outcome.status} — check the service logs`}
+            ? text.unreached
+            : text.unexpected(phase.outcome.status)}
         </Banner>
       )}
     </span>
