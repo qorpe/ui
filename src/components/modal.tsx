@@ -8,7 +8,7 @@ import { X } from "lucide-react";
  */
 
 export function ModalOverlay() {
-  return <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40" />;
+  return <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-overlay" />;
 }
 
 export function ModalClose({ className }: { className: string }) {

@@ -46,6 +46,10 @@
 
   --radius: 0.625rem;
   --shadow-surface: 0 1px 2px 0 rgb(24 24 27 / 0.04), 0 3px 14px 0 rgb(24 24 27 / 0.05);
+  /* The one scrim every modal surface dims behind, and the one lifted shadow the
+     palette floats on — both were literals in two components before B1. */
+  --overlay: rgb(0 0 0 / 0.4);
+  --shadow-palette: 0 16px 50px rgb(24 24 27 / 0.25);
 }
 
 .dark {
@@ -83,6 +87,7 @@
 /* Map the tokens onto Tailwind's color/util namespace so `bg-primary`, `text-muted-foreground`,
    `border-border`, `rounded-lg`, etc. all resolve from the tokens above. */
 @theme inline {
+  --color-overlay: var(--overlay);
   --color-app: var(--app);
   --color-surface: var(--surface);
   --color-background: var(--background);
