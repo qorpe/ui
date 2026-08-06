@@ -40,6 +40,8 @@ export interface AppShellProps {
   onHome?: () => void;
   /** Rendered at the rail foot — theme toggle, sign-out, whatever the app owns. */
   footer?: (collapsed: boolean) => ReactNode;
+  /** Strings-as-props (RFC D5): the shell's own chrome copy. */
+  labels?: { sections?: string; search?: string; collapse?: string; expand?: string; service?: string };
 }
 
 /** localStorage key for the persisted rail state — same contract as the reference. */
@@ -71,12 +73,15 @@ export function AppShell({
   services,
   activeService,
   collapsed = false,
+  labels = {},
   onToggleCollapsed,
   onSearch,
   onHome,
   footer,
 }: AppShellProps) {
   // Persist on change, wherever the state itself lives.
+  const text = { sections: "console sections", search: "Search", collapse: "collapse navigation", expand: "expand navigation", service: "service", ...labels };
+
   useEffect(() => {
     try {
       globalThis.localStorage?.setItem(COLLAPSE_KEY, collapsed ? "1" : "0");
@@ -103,7 +108,7 @@ export function AppShell({
             must never clip its own nav inside the frame's overflow-hidden. */}
         <nav
           data-testid="shell-rail"
-          aria-label="console sections"
+          aria-label={text.sections}
           className="scroll-area flex h-full flex-col overflow-y-auto px-3 pb-3"
         >
           <div className={`flex items-center py-4 ${collapsed ? "justify-center" : "justify-between px-1"}`}>
@@ -121,7 +126,7 @@ export function AppShell({
               ))}
             {onToggleCollapsed && (
               <button
-                aria-label={collapsed ? "expand navigation" : "collapse navigation"}
+                aria-label={collapsed ? text.expand : text.collapse}
                 aria-expanded={!collapsed}
                 className="shrink-0 rounded-lg p-1.5 text-faint transition-colors hover:bg-muted hover:text-foreground"
                 onClick={onToggleCollapsed}
@@ -136,9 +141,9 @@ export function AppShell({
             // its ⌘K hint; the collapsed rail keeps only the icon, centered like nav items.
             <div className="pb-2 pt-1">
               {collapsed ? (
-                <Tooltip label="Search" side="right">
+                <Tooltip label={text.search} side="right">
                   <button
-                    aria-label="Search"
+                    aria-label={text.search}
                     onClick={onSearch}
                     className="mx-auto flex h-9 w-10 items-center justify-center rounded-lg transition-colors hover:bg-muted"
                   >
@@ -163,7 +168,7 @@ export function AppShell({
               <label className="control-label" htmlFor="goldpath-service">service</label>
               <Select
                 id="goldpath-service"
-                aria-label="service"
+                aria-label={text.service}
                 className="mt-1 w-full"
                 value={activeService ?? services[0].name}
                 onChange={(name) => services.find((s) => s.name === name)?.onSelect()}

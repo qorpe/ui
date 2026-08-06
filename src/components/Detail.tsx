@@ -37,7 +37,16 @@ export function KeyValueRows({ rows }: { rows: KeyValueRow[] }) {
   );
 }
 
-export function CodeBlock({ text }: { text: string }) {
+export function CodeBlock({
+  text,
+  copyLabel = "Copy",
+  copiedLabel = "Copied",
+}: {
+  text: string;
+  /** Strings-as-props (RFC D5): the copy action's two states. */
+  copyLabel?: string;
+  copiedLabel?: string;
+}) {
   const [copied, setCopied] = useState(false);
   return (
     <div className="relative rounded-xl border border-border bg-muted/40 p-3.5">
@@ -45,7 +54,7 @@ export function CodeBlock({ text }: { text: string }) {
       <span className="absolute end-2 top-2">
         <IconAction
           icon={copied ? <Check /> : <Copy />}
-          label={copied ? "Copied" : "Copy"}
+          label={copied ? copiedLabel : copyLabel}
           onClick={() => {
             void navigator.clipboard
               ?.writeText(text)

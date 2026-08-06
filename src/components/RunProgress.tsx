@@ -19,6 +19,8 @@ export interface RunProgressProps {
   run: RunProgressData;
   /** Injected for tests and for clock-skew-free rendering; defaults to now. */
   now?: Date;
+  /** Strings-as-props (RFC D5): count-composed lines are label FUNCTIONS. */
+  labels?: { chunks?: (done: number, total: number) => string; failed?: (n: number) => string; inRepair?: (n: number) => string; planned?: (n: number) => string; rate?: (rate: number) => string; onTrack?: string; predicted?: string; overran?: string };
 }
 
 /** Items per second from the chunk rate — null while nothing has completed yet. */
@@ -50,12 +52,6 @@ export function deadlineVerdict(run: RunProgressData, now: Date = new Date()): D
   return new Date(run.predictedFinishAt).getTime() > deadline ? "overrun-predicted" : "on-track";
 }
 
-const VERDICT_TEXT: Record<Exclude<DeadlineVerdict, "none">, string> = {
-  "on-track": "on track",
-  "overrun-predicted": "predicted to overrun",
-  overrun: "overran the deadline",
-};
-
 function formatRate(rate: number): string {
   return rate >= 10 ? `${Math.round(rate).toLocaleString()} items/s` : `${rate.toFixed(1)} items/s`;
 }
@@ -65,7 +61,8 @@ function formatRate(rate: number): string {
  * prediction judged against the deadline. Percentages come from CHUNKS (the honest
  * denominator the engine actually plans); item counts are shown, never guessed.
  */
-export function RunProgress({ run, now = new Date() }: RunProgressProps) {
+export function RunProgress({ run, now = new Date(), labels = {} }: RunProgressProps) {
+  const text = { chunks: (done: number, total: number) => `${done}/${total} chunks`, failed: (n: number) => `${n} failed`, inRepair: (n: number) => `${n} items in repair`, planned: (n: number) => `${n.toLocaleString()} items planned`, rate: formatRate, onTrack: "on track", predicted: "predicted to overrun", overran: "overran the deadline", ...labels };
   const pct = run.totalChunks > 0 ? Math.round((run.completedChunks / run.totalChunks) * 100) : 0;
   const rate = itemsPerSecond(run, now);
   const verdict = deadlineVerdict(run, now);
@@ -87,13 +84,13 @@ export function RunProgress({ run, now = new Date() }: RunProgressProps) {
       <div className="flex items-center gap-3">
         <StateBadge state={run.status} tone={badgeTone} />
         <span className="text-sm text-muted-foreground">
-          {run.completedChunks}/{run.totalChunks} chunks
+          {text.chunks(run.completedChunks, run.totalChunks)}
         </span>
         {run.failedChunks > 0 && (
-          <span className="text-xs text-danger">{run.failedChunks} failed</span>
+          <span className="text-xs text-danger">{text.failed(run.failedChunks)}</span>
         )}
         {run.itemFailures > 0 && (
-          <span className="text-xs text-danger">{run.itemFailures} items in repair</span>
+          <span className="text-xs text-danger">{text.inRepair(run.itemFailures)}</span>
         )}
       </div>
 
@@ -109,8 +106,8 @@ export function RunProgress({ run, now = new Date() }: RunProgressProps) {
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
         <span>{pct}%</span>
-        {rate !== null && <span>{formatRate(rate)}</span>}
-        {run.totalItems != null && <span>{run.totalItems.toLocaleString()} items planned</span>}
+        {rate !== null && <span>{text.rate(rate)}</span>}
+        {run.totalItems != null && <span>{text.planned(run.totalItems)}</span>}
         {verdict !== "none" && (
           <span
             data-verdict={verdict}
@@ -122,7 +119,7 @@ export function RunProgress({ run, now = new Date() }: RunProgressProps) {
                   : "text-success"
             }
           >
-            {VERDICT_TEXT[verdict]}
+            {verdict === "on-track" ? text.onTrack : verdict === "overrun-predicted" ? text.predicted : text.overran}
           </span>
         )}
       </div>

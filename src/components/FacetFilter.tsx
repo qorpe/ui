@@ -13,6 +13,8 @@ export interface FacetFilterProps {
   selected: Set<string>;
   onToggle: (value: string) => void;
   onClear: () => void;
+  /** The clear row's text (strings-as-props, RFC D5). */
+  clearLabel?: string;
 }
 
 /**
@@ -21,7 +23,7 @@ export interface FacetFilterProps {
  * one visit; the trigger carries the active count. Semantics stay the console's rule:
  * whatever is selected travels to the SERVER as a filter — never a client-side narrow.
  */
-export function FacetFilter({ label, options, selected, onToggle, onClear }: FacetFilterProps) {
+export function FacetFilter({ label, options, selected, onToggle, onClear, clearLabel = "clear" }: FacetFilterProps) {
   const n = selected.size;
   // Non-modal: a filter menu must not hide the page it filters — the operator keeps the
   // table and the other controls reachable while toggling.
@@ -82,7 +84,7 @@ export function FacetFilter({ label, options, selected, onToggle, onClear }: Fac
                 }}
                 className="cursor-pointer rounded-lg px-2.5 py-2 text-center text-xs font-medium text-muted-foreground outline-none transition-colors data-[highlighted]:bg-muted"
               >
-                clear
+                {clearLabel}
               </DropdownMenu.Item>
             </>
           )}

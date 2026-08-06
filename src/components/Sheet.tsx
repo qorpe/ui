@@ -9,6 +9,8 @@ export interface SheetProps {
   title: string;
   /** One line saying what the reader is looking at (v1.1 §7.4). */
   description?: string;
+  /** The close button's accessible name (strings-as-props, RFC D5). */
+  closeLabel?: string;
   children: ReactNode;
 }
 
@@ -17,7 +19,7 @@ export interface SheetProps {
  * opens the entity HERE instead of unfolding below the table. Radix Dialog carries the
  * a11y weight (focus trap, Escape, aria wiring) — the same primitive the reference uses.
  */
-export function Sheet({ open, onOpenChange, title, description, children }: SheetProps) {
+export function Sheet({ open, onOpenChange, title, description, children, closeLabel }: SheetProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -31,7 +33,7 @@ export function Sheet({ open, onOpenChange, title, description, children }: Shee
             <ModalDescription description={description} title={title} className="mt-0.5 text-sm text-muted-foreground" />
           </div>
           <div className="scroll-area min-h-0 flex-1 overflow-y-auto px-6 py-4">{children}</div>
-          <ModalClose className="absolute end-4 top-4" />
+          <ModalClose className="absolute end-4 top-4" label={closeLabel} />
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
