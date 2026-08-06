@@ -5,7 +5,7 @@ import { IconAction } from "./IconAction";
 export type Density = "comfortable" | "compact";
 
 /** localStorage key for the persisted rhythm — same contract as the rail state. */
-export const DENSITY_KEY = "goldpath.ui.density";
+export const DENSITY_KEY = "qorpe.ui.density";
 
 const DensityContext = createContext<{ density: Density; toggle: () => void }>({
   density: "comfortable",

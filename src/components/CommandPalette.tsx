@@ -25,7 +25,7 @@ export interface CommandPaletteProps {
  * The event the sidebar search trigger dispatches — the palette listens for it, so the
  * trigger and the palette never need to know each other (the reference's contract).
  */
-export const OPEN_COMMAND_EVENT = "goldpath:open-command";
+export const OPEN_COMMAND_EVENT = "qorpe:open-command";
 
 /** Opens the palette from anywhere — the AppShell search trigger's default action. */
 export function openCommand(): void {
