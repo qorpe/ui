@@ -53,6 +53,21 @@
   --shadow-menu: 0 12px 36px rgb(24 24 27 / 0.15);
 }
 
+/* The animation standard (ui-standard §10.6): overlays enter 200ms ease-out and exit
+   150ms ease-in; menus fade in only. `prefers-reduced-motion` (below) kills them all.
+   The sheet slides from the END edge — the RTL override keeps that true. */
+@keyframes qorpe-sheet-in { from { translate: 100% 0; } to { translate: 0 0; } }
+@keyframes qorpe-sheet-out { from { translate: 0 0; } to { translate: 100% 0; } }
+@keyframes qorpe-sheet-in-rtl { from { translate: -100% 0; } to { translate: 0 0; } }
+@keyframes qorpe-sheet-out-rtl { from { translate: 0 0; } to { translate: -100% 0; } }
+/* Radix keeps the closed sheet mounted until animationend (standard Presence
+   pattern). A HIDDEN tab freezes animation timelines, so the unmount completes when
+   the tab becomes visible again — expected browser behavior, not a leak. */
+.sheet-anim[data-state="open"] { animation: qorpe-sheet-in 200ms ease-out; }
+.sheet-anim[data-state="closed"] { animation: qorpe-sheet-out 150ms ease-in forwards; }
+[dir="rtl"] .sheet-anim[data-state="open"] { animation-name: qorpe-sheet-in-rtl; }
+[dir="rtl"] .sheet-anim[data-state="closed"] { animation-name: qorpe-sheet-out-rtl; }
+
 .dark {
   --app: #0a0a0c;
   --surface: #101014;        /* the rounded body area — between the frame and the cards */

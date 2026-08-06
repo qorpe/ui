@@ -39,3 +39,24 @@ jobs:
             exit 1
           fi
           echo "G1: ok."
+
+  visual:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: install chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: visual gate (G4) — light + dark + RTL per demo
+        run: pnpm exec playwright test
+      - name: upload diffs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diffs
+          path: test-results/

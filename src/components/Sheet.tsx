@@ -26,7 +26,7 @@ export function Sheet({ open, onOpenChange, title, description, children, closeL
         <ModalOverlay />
         <Dialog.Content
           data-testid="sheet"
-          className="fixed inset-y-0 end-0 z-50 flex w-full max-w-[680px] flex-col border-s border-border bg-background shadow-2xl outline-none"
+          className="sheet-anim fixed inset-y-0 end-0 z-50 flex w-full max-w-[680px] flex-col border-s border-border bg-background shadow-2xl outline-none"
         >
           <div className="border-b border-border px-6 py-4">
             <Dialog.Title className="text-base font-semibold">{title}</Dialog.Title>
