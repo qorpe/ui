@@ -5,6 +5,8 @@ export interface SelectOption {
   value: string;
   /** Shown to the operator; the value itself when omitted. */
   label?: string;
+  /** Visible but unchoosable: the keyboard walk skips it, a pointer bounces off it. */
+  disabled?: boolean;
 }
 
 export interface SelectProps {
@@ -29,8 +31,25 @@ export interface SelectProps {
 export function Select({ value, onChange, options, id, className = "", placeholder, disabled, "aria-label": label }: SelectProps) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(() => Math.max(0, options.findIndex((option) => option.value === value)));
+  const [dropUp, setDropUp] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const listId = useId();
+
+  // The walk must stay VISIBLE, not just audible: long lists scroll the highlight
+  // into view (jsdom shims scrollIntoView, so tests observe the call, not motion).
+  useEffect(() => {
+    if (!open) return;
+    document.getElementById(`${listId}-${active}`)?.scrollIntoView({ block: "nearest" });
+  }, [open, active, listId]);
+
+  // If the VALUE moves while the list is open (an external update), the highlight
+  // follows it — reopening already re-derives, this covers the open case.
+  useEffect(() => {
+    if (!open) return;
+    const index = options.findIndex((option) => option.value === value);
+    if (index >= 0) setActive(index);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
 
   // An outside pointer closes without choosing — the operator changed their mind.
   useEffect(() => {
@@ -46,13 +65,36 @@ export function Select({ value, onChange, options, id, className = "", placehold
 
   const openAt = (index: number) => {
     setActive(Math.max(0, index));
+    // Flip upward when the viewport bottom would clip the list (max-h-64 ≈ 256px + margin)
+    // and there is more room above — measured at open, the moment that decides.
+    const rect = root.current?.getBoundingClientRect();
+    if (rect) {
+      const below = window.innerHeight - rect.bottom;
+      setDropUp(below < 280 && rect.top > below);
+    }
     setOpen(true);
   };
 
   const choose = (index: number) => {
     const option = options[index];
-    if (option) onChange(option.value);
+    if (!option || option.disabled) return;
+    onChange(option.value);
     setOpen(false);
+  };
+
+  // The keyboard walk lands only on choosable options: step over disabled ones and
+  // stay put when nothing choosable remains in that direction.
+  const stepEnabled = (from: number, direction: 1 | -1) => {
+    let index = from + direction;
+    while (index >= 0 && index < options.length && options[index]?.disabled) index += direction;
+    return index >= 0 && index < options.length ? index : from;
+  };
+  const firstEnabled = () => Math.max(0, options.findIndex((option) => !option.disabled));
+  const lastEnabled = () => {
+    for (let index = options.length - 1; index >= 0; index--) {
+      if (!options[index]?.disabled) return index;
+    }
+    return options.length - 1;
   };
 
   const onKeyDown = (event: React.KeyboardEvent) => {
@@ -67,10 +109,10 @@ export function Select({ value, onChange, options, id, className = "", placehold
     }
     if (!open) return;
     event.preventDefault();
-    if (event.key === "ArrowDown") setActive((current) => Math.min(options.length - 1, current + 1));
-    else if (event.key === "ArrowUp") setActive((current) => Math.max(0, current - 1));
-    else if (event.key === "Home") setActive(0);
-    else if (event.key === "End") setActive(options.length - 1);
+    if (event.key === "ArrowDown") setActive((current) => stepEnabled(current, 1));
+    else if (event.key === "ArrowUp") setActive((current) => stepEnabled(current, -1));
+    else if (event.key === "Home") setActive(firstEnabled());
+    else if (event.key === "End") setActive(lastEnabled());
     else if (event.key === "Enter" || event.key === " ") choose(active);
     else if (event.key === "Tab") setOpen(false);
   };
@@ -104,7 +146,9 @@ export function Select({ value, onChange, options, id, className = "", placehold
           id={listId}
           role="listbox"
           aria-label={label}
-          className="absolute start-0 top-full z-50 mt-1 max-h-64 w-full min-w-max overflow-y-auto rounded-xl border border-border bg-background p-1.5 shadow-2xl"
+          className={`absolute start-0 z-50 max-h-64 w-full min-w-max overflow-y-auto rounded-xl border border-border bg-background p-1.5 shadow-2xl ${
+            dropUp ? "bottom-full mb-1" : "top-full mt-1"
+          }`}
         >
           {options.map((option, index) => (
             <li
@@ -112,10 +156,13 @@ export function Select({ value, onChange, options, id, className = "", placehold
               id={`${listId}-${index}`}
               role="option"
               aria-selected={option.value === value}
-              className={`flex cursor-pointer select-none items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm ${
-                index === active ? "bg-muted" : ""
-              }`}
-              onPointerMove={() => setActive(index)}
+              aria-disabled={option.disabled || undefined}
+              className={`flex select-none items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm ${
+                option.disabled ? "cursor-default text-faint" : "cursor-pointer"
+              } ${index === active ? "bg-muted" : ""}`}
+              onPointerMove={() => {
+                if (!option.disabled) setActive(index);
+              }}
               // Chosen on pointerDOWN so the choice lands before any outside-click logic.
               onPointerDown={(event) => {
                 event.preventDefault();
