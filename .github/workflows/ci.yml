@@ -1,0 +1,39 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: pin gate (G6)
+        run: pnpm pin-gate
+      - name: typecheck
+        run: pnpm typecheck
+      - name: tests with coverage floor (G5)
+        run: pnpm test
+      - name: build
+        run: pnpm build
+      - name: changeset gate (G1) — src changes must carry a changeset
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          changed=$(git diff --name-only "$BASE_SHA"...HEAD)
+          if echo "$changed" | grep -q '^src/' && ! echo "$changed" | grep -q '^\.changeset/.*\.md$'; then
+            echo "G1: src/ changed without a changeset — run 'pnpm changeset'."
+            exit 1
+          fi
+          echo "G1: ok."
