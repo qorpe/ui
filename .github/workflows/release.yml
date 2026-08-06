@@ -1,0 +1,59 @@
+name: release
+
+# Changesets-driven: on every main push this either (a) opens/updates the
+# "Version Packages" PR from pending changesets, or (b) if that PR just merged,
+# publishes @qorpe/ui to npm with provenance. Publishing needs the NPM_TOKEN
+# repo secret (owner-only action: npmjs.com account + the qorpe scope + an
+# automation token). Until the secret exists the job skips HONESTLY — it never
+# half-runs.
+
+on:
+  push:
+    branches: [main]
+
+concurrency: release-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: "https://registry.npmjs.org"
+      - run: pnpm install --frozen-lockfile
+      - name: gates before anything ships
+        run: |
+          pnpm pin-gate
+          node scripts/docs-gate.mjs
+          pnpm typecheck
+          pnpm test
+          pnpm build
+      - name: check for the NPM_TOKEN secret
+        id: token
+        run: |
+          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::NPM_TOKEN is not set — version PR management and publishing are skipped (owner action pending)."
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: changesets — version PR or publish
+        if: steps.token.outputs.present == 'true'
+        uses: changesets/action@v1
+        with:
+          publish: pnpm changeset publish
+          title: "release: version @qorpe/ui"
+          commit: "release: version @qorpe/ui"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
