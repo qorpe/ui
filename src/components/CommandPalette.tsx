@@ -80,8 +80,11 @@ export function CommandPalette({ label = "Search", groups }: CommandPaletteProps
       contentClassName="fixed inset-0 z-[100] grid place-items-start justify-center pt-[16vh]"
       className="contents"
     >
-      <div className="fixed inset-0 bg-black/40" onClick={() => setOpen(false)} />
-      <div className="relative w-[640px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-border bg-background shadow-[0_16px_50px_rgb(24_24_27/0.25)]">
+      <div className="fixed inset-0 bg-overlay" onClick={() => setOpen(false)} />
+      <div
+        className="relative w-[640px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-border bg-background"
+        style={{ boxShadow: "var(--shadow-palette)" }}
+      >
         <div className="flex items-center gap-2.5 border-b border-border px-4">
           <Search className="size-4 text-muted-foreground" aria-hidden="true" />
           <Command.Input
