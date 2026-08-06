@@ -100,3 +100,61 @@ describe("strings-as-props (RFC D5) — the overrides actually flow", () => {
     expect(screen.getByText("(gizli)")).toBeInTheDocument();
   });
 });
+
+// B7 — the a11y closures, pinned.
+import { Table } from "./Table";
+import { TabPanel, TabStrip } from "./TabStrip";
+import { vi as vitest } from "vitest";
+
+describe("B7 a11y closures", () => {
+  it("a clickable Table row is a KEYBOARD row: tab reaches it, Enter opens it", async () => {
+    const onRowClick = vitest.fn();
+    render(
+      <Table
+        columns={[{ header: "id", cell: (r: { id: string }) => r.id }]}
+        rows={[{ id: "row-1" }]}
+        rowKey={(r) => r.id}
+        onRowClick={onRowClick}
+      />,
+    );
+    const row = screen.getByText("row-1").closest("tr")!;
+    expect(row).toHaveAttribute("tabindex", "0");
+    row.focus();
+    await userEvent.keyboard("{Enter}");
+    expect(onRowClick).toHaveBeenCalledWith({ id: "row-1" });
+  });
+
+  it("KeysetTable says aria-busy while a page loads", async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    render(
+      <KeysetTable
+        columns={[{ header: "id", cell: (r: { id: string }) => r.id }]}
+        rowKey={(r: { id: string }) => r.id}
+        loadPage={async () => {
+          await gate;
+          return { items: [{ id: "x" }], nextCursor: null };
+        }}
+      />,
+    );
+    expect(screen.getByRole("table")).toHaveAttribute("aria-busy", "true");
+    release();
+    expect(await screen.findByText("x")).toBeInTheDocument();
+    expect(screen.getByRole("table")).toHaveAttribute("aria-busy", "false");
+  });
+
+  it("two TabStrips with the same item ids stay apart under scopes", () => {
+    render(
+      <>
+        <TabStrip scope="left" label="left tabs" activeId="a" onSelect={() => {}} items={[{ id: "a", label: "A" }]} />
+        <TabStrip scope="right" label="right tabs" activeId="a" onSelect={() => {}} items={[{ id: "a", label: "A" }]} />
+        <TabPanel scope="left" id="a" activeId="a">left body</TabPanel>
+      </>,
+    );
+    const [leftTab, rightTab] = screen.getAllByRole("tab", { name: "A" });
+    expect(leftTab.id).toBe("tab-left-a");
+    expect(rightTab.id).toBe("tab-right-a");
+    // The pairing survives the prefix: the panel is labelled by ITS strip's tab.
+    expect(screen.getByRole("tabpanel", { name: "A" }).id).toBe("panel-left-a");
+  });
+});
