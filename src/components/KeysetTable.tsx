@@ -79,11 +79,11 @@ export function KeysetTable<T>({ columns, loadPage, rowKey, take = 50, emptyMess
       <div className="overflow-hidden rounded-2xl border border-border bg-background" style={{ boxShadow: "var(--shadow-surface)" }}>
       {toolbar && <div className="flex flex-wrap items-center gap-2 border-b border-border p-3">{toolbar}</div>}
       <div className="scroll-area overflow-x-auto">
-      <table className="w-full border-collapse text-sm">
+      <table className="w-full border-collapse text-sm" aria-busy={state === "loading"}>
         <thead>
           <tr>
-            {columns.map((column) => (
-              <th key={column.header} className={`border-b border-border bg-muted/40 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground ${column.align === "right" ? "text-end" : "text-start"}`}>
+            {columns.map((column, index) => (
+              <th key={`${index}-${column.header}`} className={`border-b border-border bg-muted/40 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground ${column.align === "right" ? "text-end" : "text-start"}`}>
                 {column.header}
               </th>
             ))}
@@ -92,8 +92,8 @@ export function KeysetTable<T>({ columns, loadPage, rowKey, take = 50, emptyMess
         <tbody>
           {rows.map((row) => (
             <tr key={rowKey(row)} className="border-b border-border transition-colors hover:bg-muted/40">
-              {columns.map((column) => (
-                <td key={column.header} className={`${cell} align-middle ${column.align === "right" ? "text-end" : ""}`}>
+              {columns.map((column, index) => (
+                <td key={`${index}-${column.header}`} className={`${cell} align-middle ${column.align === "right" ? "text-end" : ""}`}>
                   {column.cell(row)}
                 </td>
               ))}

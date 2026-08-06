@@ -34,9 +34,9 @@ export function Table<T>({ columns, rows, rowKey, onRowClick, emptyMessage = "No
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr>
-              {columns.map((column) => (
+              {columns.map((column, index) => (
                 <th
-                  key={column.header}
+                  key={`${index}-${column.header}`}
                   className={`border-b border-border bg-muted/40 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground ${
                     column.align === "right" ? "text-end" : "text-start"
                   }`}
@@ -59,9 +59,22 @@ export function Table<T>({ columns, rows, rowKey, onRowClick, emptyMessage = "No
                   key={rowKey(row)}
                   className={`border-b border-border transition-colors hover:bg-muted/40 ${onRowClick ? "cursor-pointer" : ""}`}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  // A clickable row must be a KEYBOARD row too (B7): tab reaches it,
+                  // Enter/Space open it — same Sheet the mouse gets.
+                  tabIndex={onRowClick ? 0 : undefined}
+                  onKeyDown={
+                    onRowClick
+                      ? (event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            onRowClick(row);
+                          }
+                        }
+                      : undefined
+                  }
                 >
-                  {columns.map((column) => (
-                    <td key={column.header} className={`${cell} align-middle ${column.align === "right" ? "text-end" : ""}`}>
+                  {columns.map((column, index) => (
+                    <td key={`${index}-${column.header}`} className={`${cell} align-middle ${column.align === "right" ? "text-end" : ""}`}>
                       {column.cell(row)}
                     </td>
                   ))}

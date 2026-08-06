@@ -247,3 +247,25 @@ U9 addenda (owner review, 2026-08-02):
   is a special case now, not a limitation. The console still never merges
   take-bounded pages client-side. The History date fields also joined the toolbar
   BASELINE (inline labels — the stacked ones pushed them below the row).
+
+## 10. v1.4 — the kit-repo era (B-series, 2026-08-06)
+
+The standard now versions WITH `@qorpe/ui`; a rule change and the component
+enforcing it land in the same PR (repo gate G1 references this file).
+
+1. **Selected-marker rule** — selection is marked by a TRAILING `Check` icon;
+   menus may add `font-semibold`, nothing else does. One marker, one weight
+   rule: no leading checkbox squares for single-selection, no bold-only
+   selection (`DropdownMenuCheckItem` is a real `menuitemcheckbox` and says
+   `aria-checked`).
+2. **Strings-as-props** — every user-facing literal is an overridable prop
+   with an English default; count-composed lines are label FUNCTIONS so word
+   order survives translation. The kit ships no i18n framework.
+3. **Logical properties only** — `ps/pe/ms/me/start/end`; RTL is an
+   acceptance criterion for every component.
+4. **Keyboard parity** — anything a pointer can activate, a keyboard can:
+   clickable table rows carry `tabIndex` + Enter/Space; loading tables say
+   `aria-busy`; tab/panel id pairings are `scope`-prefixed when two strips
+   could share item ids.
+5. **Overlay & shadows are tokens** — `--overlay`, `--shadow-palette`,
+   `--shadow-menu`; a literal scrim or shadow in a component is a defect.
