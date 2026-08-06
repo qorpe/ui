@@ -45,3 +45,69 @@ describe("the family select (v1.2 §8.7, modernized — the family's OWN listbox
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
   });
 });
+
+describe("B2 — the four completed gaps (long lists, viewport edges, disabled, live value)", () => {
+  const MIXED = [{ value: "a" }, { value: "b", disabled: true }, { value: "c" }];
+
+  it("skips disabled options on the walk and bounces the pointer off them", async () => {
+    const onChange = vi.fn();
+    render(<Select aria-label="mixed" value="a" onChange={onChange} options={MIXED} />);
+    const trigger = screen.getByRole("combobox", { name: "mixed" });
+
+    trigger.focus();
+    await userEvent.keyboard("{ArrowDown}");   // opens at "a"
+    await userEvent.keyboard("{ArrowDown}");   // walks — and lands on "c", never "b"
+    expect(trigger.getAttribute("aria-activedescendant")).toBe(screen.getByRole("option", { name: "c" }).id);
+
+    // A pointer on the disabled option chooses nothing and the list stays open.
+    await userEvent.click(screen.getByRole("option", { name: "b" }));
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+  });
+
+  it("End lands on the LAST ENABLED option when the tail is disabled", async () => {
+    render(
+      <Select aria-label="tail" value="a" onChange={() => {}}
+        options={[{ value: "a" }, { value: "z", disabled: true }]} />,
+    );
+    const tail = screen.getByRole("combobox", { name: "tail" });
+    tail.focus();
+    await userEvent.keyboard("{ArrowDown}");
+    await userEvent.keyboard("{End}");
+    expect(tail.getAttribute("aria-activedescendant")).toBe(screen.getByRole("option", { name: "a" }).id);
+  });
+
+  it("scrolls the highlighted option into view as the walk moves", async () => {
+    const scrolled = vi.spyOn(Element.prototype, "scrollIntoView");
+    render(<Select aria-label="long" value="a" onChange={() => {}} options={OPTIONS} />);
+    screen.getByRole("combobox", { name: "long" }).focus();
+    await userEvent.keyboard("{ArrowDown}");
+    await userEvent.keyboard("{ArrowDown}");
+    expect(scrolled).toHaveBeenCalledWith({ block: "nearest" });
+    scrolled.mockRestore();
+  });
+
+  it("flips upward when the viewport bottom would clip the list", async () => {
+    const { container } = render(<Select aria-label="edge" value="a" onChange={() => {}} options={OPTIONS} />);
+    const root = container.firstElementChild as HTMLElement;
+    root.getBoundingClientRect = () =>
+      ({ top: 700, bottom: 736, left: 0, right: 100, width: 100, height: 36, x: 0, y: 700, toJSON: () => ({}) }) as DOMRect;
+
+    await userEvent.click(screen.getByRole("combobox", { name: "edge" }));
+    expect(screen.getByRole("listbox").className).toContain("bottom-full");
+  });
+
+  it("keeps opening downward when there is room below", async () => {
+    render(<Select aria-label="roomy" value="a" onChange={() => {}} options={OPTIONS} />);
+    await userEvent.click(screen.getByRole("combobox", { name: "roomy" }));
+    expect(screen.getByRole("listbox").className).toContain("top-full");
+  });
+
+  it("follows an external value change while the list is OPEN", async () => {
+    const { rerender } = render(<Select aria-label="live" value="a" onChange={() => {}} options={MIXED} />);
+    const trigger = screen.getByRole("combobox", { name: "live" });
+    await userEvent.click(trigger);
+    rerender(<Select aria-label="live" value="c" onChange={() => {}} options={MIXED} />);
+    expect(trigger.getAttribute("aria-activedescendant")).toBe(screen.getByRole("option", { name: "c" }).id);
+  });
+});
