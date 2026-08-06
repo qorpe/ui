@@ -20,7 +20,7 @@ export interface RunProgressProps {
   /** Injected for tests and for clock-skew-free rendering; defaults to now. */
   now?: Date;
   /** Strings-as-props (RFC D5): count-composed lines are label FUNCTIONS. */
-  labels?: { chunks?: (done: number, total: number) => string; failed?: (n: number) => string; inRepair?: (n: number) => string; planned?: (n: number) => string; rate?: (rate: number) => string; onTrack?: string; predicted?: string; overran?: string };
+  labels?: { chunks?: (done: number, total: number) => string; failed?: (n: number) => string; inRepair?: (n: number) => string; planned?: (n: number) => string; rate?: (rate: number) => string; progressLabel?: string; onTrack?: string; predicted?: string; overran?: string };
 }
 
 /** Items per second from the chunk rate — null while nothing has completed yet. */
@@ -62,7 +62,7 @@ function formatRate(rate: number): string {
  * denominator the engine actually plans); item counts are shown, never guessed.
  */
 export function RunProgress({ run, now = new Date(), labels = {} }: RunProgressProps) {
-  const text = { chunks: (done: number, total: number) => `${done}/${total} chunks`, failed: (n: number) => `${n} failed`, inRepair: (n: number) => `${n} items in repair`, planned: (n: number) => `${n.toLocaleString()} items planned`, rate: formatRate, onTrack: "on track", predicted: "predicted to overrun", overran: "overran the deadline", ...labels };
+  const text = { chunks: (done: number, total: number) => `${done}/${total} chunks`, failed: (n: number) => `${n} failed`, inRepair: (n: number) => `${n} items in repair`, planned: (n: number) => `${n.toLocaleString()} items planned`, rate: formatRate, progressLabel: "run progress", onTrack: "on track", predicted: "predicted to overrun", overran: "overran the deadline", ...labels };
   const pct = run.totalChunks > 0 ? Math.round((run.completedChunks / run.totalChunks) * 100) : 0;
   const rate = itemsPerSecond(run, now);
   const verdict = deadlineVerdict(run, now);
@@ -96,6 +96,7 @@ export function RunProgress({ run, now = new Date(), labels = {} }: RunProgressP
 
       <div
         role="progressbar"
+        aria-label={text.progressLabel}
         aria-valuenow={pct}
         aria-valuemin={0}
         aria-valuemax={100}

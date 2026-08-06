@@ -35,11 +35,14 @@ the kit's API. Dark mode is class-driven (`.dark` on `<html>`).
 - Strings are props with English defaults — the kit ships no i18n framework; RTL via
   logical properties is an acceptance criterion for every component.
 
-## Gates roadmap
+## Gates
 
-G1 changeset, G5 coverage, G6 pin are live in CI. G2 (export-without-docs), G3 (axe
-per gallery demo), G4 (visual snapshots incl. dark + RTL) land with the docs-gallery
-slice — tracked in the repo issues.
+Live in CI: **G1** changeset (src change without a changeset fails) · **G2**
+export-without-docs (`scripts/docs-gate.mjs` parses the barrel; every export needs a
+home in `gallery/docs-map.json`, whose demos the tests render) · **G3** axe on every
+gallery demo · **G5** coverage floor · **G6** exact-pin. **G4** (visual snapshots
+incl. dark + RTL) is the remaining slice — tracked in the repo issues. The gallery
+(`pnpm gallery`) IS the docs: same data, same demos the gates verify.
 
 ## License
 
