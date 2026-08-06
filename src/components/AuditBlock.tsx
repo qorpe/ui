@@ -1,4 +1,5 @@
 /** One audit row of the frozen log, as the console reads it. */
+import { shortStamp } from "../stamp";
 export interface AuditEntry {
   id: number | string;
   timestamp: string;
@@ -61,7 +62,7 @@ export function AuditBlock({ entries, classified, emptyMessage = "No audited cha
         return (
           <div key={entry.id} className="grid grid-cols-[auto_1fr] gap-x-4 rounded-md border border-border/60 px-3 py-2 text-sm">
             <div className="text-xs text-muted-foreground">
-              <div>{new Date(entry.timestamp).toISOString().replace("T", " ").slice(0, 19)}</div>
+              <div title={entry.timestamp}>{shortStamp(entry.timestamp)}</div>
               <div className="text-faint">{entry.user ?? text.system}</div>
             </div>
             <div>

@@ -45,7 +45,7 @@ export interface AppShellProps {
 }
 
 /** localStorage key for the persisted rail state — same contract as the reference. */
-export const COLLAPSE_KEY = "goldpath.ui.collapsed";
+export const COLLAPSE_KEY = "qorpe.ui.collapsed";
 
 /**
  * Reads the persisted rail state once, for callers that own `collapsed` — the state
@@ -165,9 +165,9 @@ export function AppShell({
 
           {services && services.length > 0 && !collapsed && (
             <div className="mb-2 px-1">
-              <label className="control-label" htmlFor="goldpath-service">service</label>
+              <label className="control-label" htmlFor="qorpe-service">{text.service}</label>
               <Select
-                id="goldpath-service"
+                id="qorpe-service"
                 aria-label={text.service}
                 className="mt-1 w-full"
                 value={activeService ?? services[0].name}

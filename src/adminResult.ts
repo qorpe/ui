@@ -1,7 +1,7 @@
 // The FROZEN verb envelope (docs/rfc/goldpath-admin-contract.md): every mutating verb
 // answers { ok, message } — 200 when ok, 400 with the same envelope when refused.
 // Refusals TEACH; the kit surfaces the message verbatim, never paraphrased.
-export interface GoldpathAdminResult {
+export interface AdminResult {
   ok: boolean;
   message: string;
 }
@@ -19,9 +19,12 @@ export async function executeVerb(
 ): Promise<VerbOutcome> {
   const response = await fetcher(url, { method: "POST", ...init });
   if (response.status === 200 || response.status === 400) {
-    const result = (await response.json()) as GoldpathAdminResult;
+    const result = (await response.json()) as AdminResult;
     return result.ok ? { kind: "ok", message: result.message } : { kind: "refused", message: result.message };
   }
 
   return { kind: "error", status: response.status };
 }
+
+/** @deprecated the family-neutral name is `AdminResult` (RFC D8) — this alias leaves after one migration window. */
+export type GoldpathAdminResult = AdminResult;

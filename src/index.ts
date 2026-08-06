@@ -22,7 +22,7 @@ export { DetailSection, KeyValueRows, CodeBlock, type KeyValueRow } from "./comp
 export { statusTone, KNOWN_STATES, type StatusTone } from "./status";
 export { humanizeSeconds } from "./duration";
 export { shortStamp } from "./stamp";
-export { executeVerb, type GoldpathAdminResult, type VerbOutcome } from "./adminResult";
+export { executeVerb, type AdminResult, type GoldpathAdminResult, type VerbOutcome } from "./adminResult";
 export { Field, Input, Textarea, type FieldProps } from "./components/Field";
 export { Button, type ButtonProps } from "./components/Button";
 export { Switch } from "./components/Switch";
