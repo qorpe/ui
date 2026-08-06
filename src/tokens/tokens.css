@@ -50,6 +50,7 @@
      palette floats on — both were literals in two components before B1. */
   --overlay: rgb(0 0 0 / 0.4);
   --shadow-palette: 0 16px 50px rgb(24 24 27 / 0.25);
+  --shadow-menu: 0 12px 36px rgb(24 24 27 / 0.15);
 }
 
 .dark {
