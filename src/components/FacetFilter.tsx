@@ -15,6 +15,10 @@ export interface FacetFilterProps {
   onClear: () => void;
   /** The clear row's text (strings-as-props, RFC D5). */
   clearLabel?: string;
+  /** The smaller trigger for dense toolbars (adopter feedback: mockifyr's method facet). */
+  compact?: boolean;
+  /** Extra classes on the TRIGGER button (layout concerns like widths stay the caller's). */
+  className?: string;
 }
 
 /**
@@ -23,7 +27,7 @@ export interface FacetFilterProps {
  * one visit; the trigger carries the active count. Semantics stay the console's rule:
  * whatever is selected travels to the SERVER as a filter — never a client-side narrow.
  */
-export function FacetFilter({ label, options, selected, onToggle, onClear, clearLabel = "clear" }: FacetFilterProps) {
+export function FacetFilter({ label, options, selected, onToggle, onClear, clearLabel = "clear", compact = false, className = "" }: FacetFilterProps) {
   const n = selected.size;
   // Non-modal: a filter menu must not hide the page it filters — the operator keeps the
   // table and the other controls reachable while toggling.
@@ -31,11 +35,13 @@ export function FacetFilter({ label, options, selected, onToggle, onClear, clear
     <DropdownMenu.Root modal={false}>
       <DropdownMenu.Trigger asChild>
         <button
-          className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium transition-colors hover:bg-muted ${
+          className={`inline-flex items-center gap-1.5 rounded-lg border font-medium transition-colors hover:bg-muted ${
+            compact ? "h-8 px-2.5 text-[13px]" : "h-9 px-3 text-sm"
+          } ${
             n > 0 ? "border-primary/50 bg-background text-foreground" : "border-border bg-background text-muted-foreground"
-          }`}
+          } ${className}`}
         >
-          <ListFilter size={16} aria-hidden="true" className="shrink-0" />
+          <ListFilter size={compact ? 14 : 16} aria-hidden="true" className="shrink-0" />
           {label}
           {n > 0 && (
             <span className="rounded-md bg-primary px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-primary-foreground">{n}</span>
