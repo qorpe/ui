@@ -12,6 +12,8 @@ export interface SheetProps {
   /** The close button's accessible name (strings-as-props, RFC D5). */
   closeLabel?: string;
   children: ReactNode;
+  /** The panel's width ceiling in px (adopter feedback: wide journal details, narrow behavior panels). */
+  maxWidth?: number;
 }
 
 /**
@@ -19,14 +21,15 @@ export interface SheetProps {
  * opens the entity HERE instead of unfolding below the table. Radix Dialog carries the
  * a11y weight (focus trap, Escape, aria wiring) — the same primitive the reference uses.
  */
-export function Sheet({ open, onOpenChange, title, description, children, closeLabel }: SheetProps) {
+export function Sheet({ open, onOpenChange, title, description, children, closeLabel, maxWidth = 680 }: SheetProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <ModalOverlay />
         <Dialog.Content
           data-testid="sheet"
-          className="sheet-anim fixed inset-y-0 end-0 z-50 flex w-full max-w-[680px] flex-col border-s border-border bg-background shadow-2xl outline-none"
+          className="sheet-anim fixed inset-y-0 end-0 z-50 flex w-full flex-col border-s border-border bg-background shadow-2xl outline-none"
+          style={{ maxWidth }}
         >
           <div className="border-b border-border px-6 py-4">
             <Dialog.Title className="text-base font-semibold">{title}</Dialog.Title>

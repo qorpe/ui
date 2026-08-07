@@ -176,3 +176,14 @@ describe("0.1.1 adopter feedback (mockifyr)", () => {
     expect(screen.getByRole("textbox", { name: "filter" }).closest("label")!.className).toContain("flex-none");
   });
 });
+
+// 0.1.2 — Sheet width (adopter feedback #3, mockifyr M2).
+import { Sheet } from "./Sheet";
+describe("0.1.2 Sheet maxWidth", () => {
+  it("defaults to 680 and takes the caller's ceiling", () => {
+    const { rerender } = render(<Sheet open onOpenChange={() => {}} title="detay">gövde</Sheet>);
+    expect(document.querySelector('[data-testid="sheet"]')).toHaveStyle({ maxWidth: "680px" });
+    rerender(<Sheet open onOpenChange={() => {}} title="detay" maxWidth={720}>gövde</Sheet>);
+    expect(document.querySelector('[data-testid="sheet"]')).toHaveStyle({ maxWidth: "720px" });
+  });
+});
