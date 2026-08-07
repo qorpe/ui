@@ -1,6 +1,6 @@
 {
   "name": "@qorpe/ui",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "The qorpe family UI kit: the ui-standard tokens, primitives and composites every qorpe console composes from.",
   "license": "Apache-2.0",
   "repository": {
@@ -31,7 +31,8 @@
     "typecheck": "tsc --noEmit",
     "gallery": "vite",
     "pin-gate": "./scripts/pin-gate.sh",
-    "changeset": "changeset"
+    "changeset": "changeset",
+    "release:publish": "changeset publish"
   },
   "peerDependencies": {
     "react": "^19.0.0",
