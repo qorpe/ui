@@ -1,5 +1,13 @@
 # @qorpe/ui
 
+## 0.1.2
+
+### Patch Changes
+
+- 1a1bd74: Sheet gains `maxWidth` (default 680): adopter feedback from mockifyr M2 —
+  wide journal-detail panels (720) and narrow behavior panels (480) are real
+  anatomies; the ceiling is a number, not a class-conflict fight.
+
 ## 0.1.1
 
 ### Patch Changes
