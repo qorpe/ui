@@ -269,3 +269,7 @@ enforcing it land in the same PR (repo gate G1 references this file).
    could share item ids.
 5. **Overlay & shadows are tokens** — `--overlay`, `--shadow-palette`,
    `--shadow-menu`; a literal scrim or shadow in a component is a defect.
+6. **Animation rule** — overlays enter in 200ms ease-out and exit in 150ms
+   ease-in (the sheet slides from its END edge, RTL-aware); menus fade in only;
+   nothing else animates. `prefers-reduced-motion` kills all of it. The G4 visual
+   gate photographs every demo in light, dark and RTL — a drifted pixel fails CI.

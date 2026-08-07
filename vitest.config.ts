@@ -5,6 +5,8 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: "jsdom",
+    // The visual specs are Playwright's (G4), not vitest's.
+    exclude: ["**/node_modules/**", "visual/**"],
     coverage: {
       // Only the SOURCE is judged: the gallery and the dev entry point are worked
       // examples, and a barrel file has nothing to test.

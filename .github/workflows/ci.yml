@@ -39,3 +39,22 @@ jobs:
             exit 1
           fi
           echo "G1: ok."
+
+  visual:
+    runs-on: ubuntu-latest
+    # The SAME container that generates baselines (scripts/update-visual.sh) — one
+    # rendering environment everywhere, or fonts alone drift 1-2% of pixels.
+    container: mcr.microsoft.com/playwright:v1.58.2-noble
+    steps:
+      - uses: actions/checkout@v4
+      - name: pnpm via corepack (the image's node)
+        run: corepack enable && corepack prepare pnpm@10.28.2 --activate
+      - run: pnpm install --frozen-lockfile
+      - name: visual gate (G4) — light + dark + RTL per demo
+        run: pnpm exec playwright test
+      - name: upload diffs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diffs
+          path: test-results/
