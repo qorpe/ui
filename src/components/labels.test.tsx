@@ -158,3 +158,21 @@ describe("B7 a11y closures", () => {
     expect(screen.getByRole("tabpanel", { name: "A" }).id).toBe("panel-left-a");
   });
 });
+
+// 0.1.1 — the first adopter-feedback additions, pinned.
+describe("0.1.1 adopter feedback (mockifyr)", () => {
+  it("FacetFilter: compact shrinks the trigger and className passes through", () => {
+    render(
+      <FacetFilter label="method" compact className="w-full" options={[{ value: "GET" }]}
+        selected={new Set()} onToggle={() => {}} onClear={() => {}} />,
+    );
+    const trigger = screen.getByRole("button", { name: /method/ });
+    expect(trigger.className).toContain("h-8");
+    expect(trigger.className).toContain("w-full");
+  });
+
+  it("SearchBox: className lands on the wrapper without touching the input", () => {
+    render(<SearchBox value="" onCommit={() => {}} label="filter" className="flex-none" />);
+    expect(screen.getByRole("textbox", { name: "filter" }).closest("label")!.className).toContain("flex-none");
+  });
+});

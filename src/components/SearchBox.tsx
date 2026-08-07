@@ -9,6 +9,8 @@ export interface SearchBoxProps {
   /** The clear button's accessible name (strings-as-props, RFC D5). */
   clearLabel?: string;
   label: string;
+  /** Extra classes on the wrapping label (layout concerns stay the caller's). */
+  className?: string;
 }
 
 /**
@@ -16,12 +18,12 @@ export interface SearchBoxProps {
  * SERVER-side through the existing filters — never a loaded page: filtering client-side
  * would read as "no matches" while more sat behind the take bound.
  */
-export function SearchBox({ value, onCommit, placeholder, label, clearLabel = "clear search" }: SearchBoxProps) {
+export function SearchBox({ value, onCommit, placeholder, label, clearLabel = "clear search", className = "" }: SearchBoxProps) {
   const [draft, setDraft] = useState(value);
   useEffect(() => setDraft(value), [value]);
 
   return (
-    <label className="flex h-9 min-w-[220px] items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 transition-colors focus-within:border-border-strong">
+    <label className={`flex h-9 min-w-[220px] items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 transition-colors focus-within:border-border-strong ${className}`}>
       <Search size={16} aria-hidden="true" className="shrink-0 text-muted-foreground" />
       <input
         aria-label={label}
