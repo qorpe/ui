@@ -1,11 +1,16 @@
 name: release
 
-# Changesets-driven: on every main push this either (a) opens/updates the
-# "Version Packages" PR from pending changesets, or (b) if that PR just merged,
-# publishes @qorpe/ui to npm with provenance. Publishing needs the NPM_TOKEN
-# repo secret (owner-only action: npmjs.com account + the qorpe scope + an
-# automation token). Until the secret exists the job skips HONESTLY — it never
-# half-runs.
+# Changesets-driven, TOKENLESS (npm Trusted Publishing / OIDC — no NPM_TOKEN secret
+# anywhere). On every main push this either (a) opens/updates the "Version Packages"
+# PR from pending changesets, or (b) if none are pending, publishes @qorpe/ui via
+# OIDC with automatic provenance.
+#
+# Bootstrap order (npm cannot configure a trusted publisher for a package that does
+# not exist yet — npm/cli#8544): the FIRST publish is manual from the owner's
+# logged-in machine; the owner then configures the trusted publisher on npmjs.com
+# (GitHub Actions / qorpe / ui / release.yml) and the TRUSTED_PUBLISHING repo
+# variable is set to "enabled" — from then on every release is automatic. Until the
+# variable exists the publish path skips honestly.
 
 on:
   push:
@@ -29,6 +34,8 @@ jobs:
           node-version: 22
           cache: pnpm
           registry-url: "https://registry.npmjs.org"
+      - name: npm >= 11.5.1 (trusted publishing floor; node 22 bundles npm 10)
+        run: npm install -g npm@11
       - run: pnpm install --frozen-lockfile
       - name: gates before anything ships
         run: |
@@ -37,23 +44,20 @@ jobs:
           pnpm typecheck
           pnpm test
           pnpm build
-      - name: check for the NPM_TOKEN secret
-        id: token
-        run: |
-          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-            echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::NPM_TOKEN is not set — version PR management and publishing are skipped (owner action pending)."
-          else
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          fi
-      - name: changesets — version PR or publish
-        if: steps.token.outputs.present == 'true'
+      - name: changesets — version PR, or publish via OIDC
+        if: vars.TRUSTED_PUBLISHING == 'enabled'
         uses: changesets/action@v1
         with:
-          publish: pnpm changeset publish
+          publish: npm run release:publish
           title: "release: version @qorpe/ui"
           commit: "release: version @qorpe/ui"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: "true"
+      - name: version PR only (publish disabled until trusted publishing is enabled)
+        if: vars.TRUSTED_PUBLISHING != 'enabled'
+        uses: changesets/action@v1
+        with:
+          title: "release: version @qorpe/ui"
+          commit: "release: version @qorpe/ui"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
