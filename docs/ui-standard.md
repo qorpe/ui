@@ -47,15 +47,22 @@ the primary surface, cards lift on `--background` above `--surface`.
 
 ## 4. The primitive inventory (the kit's contract)
 
-Inherited from Mockifyr's proven set, extended with Goldpath-specific composites:
+**The roster is not written here — it is GENERATED.** A hand-kept list drifts the moment a
+component lands or retires (this section once named five components the kit had never
+exported), so the inventory lives where it cannot lie: `src/index.ts` is the contract,
+`gallery/docs-map.json` gives every export a documented home, and gate G2 fails the build
+if the two disagree. Run `pnpm gallery` to browse it, or read `docs/inventory.md`, which is
+generated from the barrel by `scripts/inventory.mjs`.
 
-| From Mockifyr | Goldpath composites (new) |
-|---|---|
-| app-shell · sidebar · tenant-switcher · command-palette | **keyset table** (cursor pager, `take` clamp aware — never offset/total-count UI) |
-| button · badges · tabs · sheet · switch · field | **state badge** (domain states → semantic ramp mapping below) |
-| confirm-dialog · dropdown/context menu | **verb button** (POST + `GoldpathAdminResult` envelope + 400-refusal surface + audit hint) |
-| search-box · facet-filter · empty-state | **run progress** (chunks, items/s, predicted-finish vs deadline) |
-| json-editor · error-boundary · login-gate | **audit trail block** (old→new change rows, masked classified fields) |
+What the standard fixes here is not WHICH components exist but what a component IS:
+
+- **A primitive is family-owned.** If two consoles need it, it belongs in the kit — a
+  second copy is the drift this repo exists to end.
+- **A composite is domain-shaped but domain-agnostic**: keyset table, state badge, verb
+  button, run progress, audit trail block. They encode an OPERATIONAL idea (cursor paging,
+  confirm-before-verb, honest chunk math), never a business vocabulary.
+- **Domain visuals stay with the app**: HTTP method chips, protocol badges, product
+  illustrations, brand marks. Adopting the kit is not a restyle.
 
 ## 5. Domain state → status ramp mapping
 
@@ -251,7 +258,8 @@ U9 addenda (owner review, 2026-08-02):
 ## 10. v1.4 — the kit-repo era (B-series, 2026-08-06)
 
 The standard now versions WITH `@qorpe/ui`; a rule change and the component
-enforcing it land in the same PR (repo gate G1 references this file).
+enforcing it land in the same PR — enforced by gate **G7** (`.github/workflows/ci.yml`),
+which fails a PR that edits this file without touching `src/`.
 
 1. **Selected-marker rule** — selection is marked by a TRAILING `Check` icon;
    menus may add `font-semibold`, nothing else does. One marker, one weight

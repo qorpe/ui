@@ -40,9 +40,11 @@ the kit's API. Dark mode is class-driven (`.dark` on `<html>`).
 Live in CI: **G1** changeset (src change without a changeset fails) · **G2**
 export-without-docs (`scripts/docs-gate.mjs` parses the barrel; every export needs a
 home in `gallery/docs-map.json`, whose demos the tests render) · **G3** axe on every
-gallery demo · **G5** coverage floor · **G6** exact-pin. **G4** (visual snapshots
-incl. dark + RTL) is the remaining slice — tracked in the repo issues. The gallery
-(`pnpm gallery`) IS the docs: same data, same demos the gates verify.
+gallery demo · **G4** visual snapshots (light + dark + RTL, 63 baselines rendered in
+the same Playwright container `scripts/update-visual.sh` uses) · **G5** coverage floor ·
+**G6** exact-pin · **G7** standard-sync (a `docs/ui-standard.md` change must carry the
+component that enforces it, and vice versa). The gallery (`pnpm gallery`) IS the docs:
+same data, same demos the gates verify.
 
 ## License
 
