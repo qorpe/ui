@@ -295,6 +295,48 @@ describe("the v1.1 rail (u7-b1)", () => {
     expect(screen.getByTestId("shell-surface").className).toContain("overflow-hidden");
   });
 
+  it("an href makes the item a real link — a console is for watching two screens at once", async () => {
+    const onSelect = vi.fn();
+    render(
+      <AppShell title="t" activeId="a" nav={[{ id: "a", label: "Journal", href: "/journal", onSelect }]}>x</AppShell>,
+    );
+
+    const link = screen.getByRole("link", { name: "Journal" });
+    expect(link).toHaveAttribute("href", "/journal");
+    expect(link).toHaveAttribute("aria-current", "page");
+
+    // The router still gets its callback, so it can preventDefault and push state instead
+    // of letting the browser reload the document.
+    await userEvent.click(link);
+    expect(onSelect).toHaveBeenCalledTimes(1);
+  });
+
+  it("without an href the item stays a button — nothing existing changes shape", () => {
+    render(<AppShell title="t" activeId="a" nav={[item("a")]}>x</AppShell>);
+
+    expect(screen.getByRole("button", { name: /a/ })).toBeInTheDocument();
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  });
+
+  it("a link and a button item are styled identically — navigating is not a visual question", () => {
+    render(
+      <AppShell
+        title="t"
+        activeId="neither"
+        nav={[
+          { id: "a", label: "Linked", href: "/x", onSelect: () => {} },
+          { id: "b", label: "Plain", onSelect: () => {} },
+        ]}
+      >x</AppShell>,
+    );
+
+    // Both inactive on purpose: the active state legitimately changes the classes, so
+    // comparing an active link against an inactive button would prove nothing.
+    const linked = screen.getByRole("link", { name: "Linked" });
+    const plain = screen.getByRole("button", { name: "Plain" });
+    expect(linked.className).toBe(plain.className);
+  });
+
   it("a throwing localStorage never breaks the shell", () => {
     const real = Storage.prototype.getItem;
     Storage.prototype.getItem = () => { throw new Error("private mode"); };

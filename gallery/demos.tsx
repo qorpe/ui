@@ -227,7 +227,8 @@ export const DEMO_RENDERERS: Record<string, () => ReactElement> = {
         subtitle="docs"
         activeId="runs"
         nav={[
-          { id: "home", label: "Today", icon: <Home size={16} />, onSelect: () => {} },
+          // One real link: the browser's own affordances (new tab, copy link) come free.
+          { id: "home", label: "Today", icon: <Home size={16} />, href: "#today", onSelect: (() => {}) },
           // Two tones, side by side: a count is neutral, an alarm is asked for.
           { id: "runs", label: "Runs", icon: <Package size={16} />, group: "Operations", badge: "1.2k", onSelect: () => {} },
           { id: "failed", label: "Failed", icon: <Package size={16} />, group: "Operations", badge: 3, badgeTone: "danger", onSelect: () => {} },
