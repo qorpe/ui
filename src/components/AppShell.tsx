@@ -23,6 +23,12 @@ export interface ShellNavItem {
    * console that badges failures asks for `"danger"` explicitly.
    */
   badgeTone?: "neutral" | "danger";
+  /**
+   * Makes the item a real link. Without it the item is a button, which navigates but cannot
+   * be ⌘-clicked into a second tab — and watching two screens at once is what a console is
+   * for. `onSelect` still fires on click, so a router can preventDefault and push state.
+   */
+  href?: string;
   onSelect: () => void;
 }
 
@@ -229,22 +235,17 @@ export function AppShell({
               {group.name && collapsed && <div className="mx-3 my-2 h-px bg-border" aria-hidden="true" />}
               {group.items.map((item) => {
                 const active = item.id === activeId;
-                const button = (
-                  <button
-                    key={item.id}
-                    aria-current={active ? "page" : undefined}
-                    // Reference-exact (owner: "birebir Mockifyr"): items carry NO border;
-                    // the active one gets the fill plus a short accent bar INSET at its
-                    // left edge — a highlight, not a border.
-                    className={`relative mb-0.5 flex h-9 items-center rounded-lg text-sm font-medium transition-colors ${
-                      collapsed ? "mx-auto w-10 justify-center" : "w-full gap-2.5 px-2.5"
-                    } ${
-                      active
-                        ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    }`}
-                    onClick={item.onSelect}
-                  >
+                // ONE class string for both elements: an anchor and a button that look even
+                // slightly different would make "does this item navigate" a visual question.
+                const itemClass = `relative mb-0.5 flex h-9 items-center rounded-lg text-sm font-medium transition-colors ${
+                  collapsed ? "mx-auto w-10 justify-center" : "w-full gap-2.5 px-2.5"
+                } ${
+                  active
+                    ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`;
+                const inner = (
+                  <>
                     {active && !collapsed && <span aria-hidden="true" className="absolute inset-y-1.5 start-0 w-[3px] rounded-full bg-primary" />}
                     {item.icon && <span aria-hidden="true" className="flex shrink-0 items-center [&>svg]:h-[18px] [&>svg]:w-[18px]">{item.icon}</span>}
                     <span className={collapsed ? "sr-only" : "truncate"}>{item.label}</span>
@@ -259,6 +260,24 @@ export function AppShell({
                         {item.badge}
                       </span>
                     )}
+                  </>
+                );
+                // An href makes the item a REAL link, so the browser's own affordances work:
+                // ⌘-click and middle-click open a second tab, the context menu offers "open in
+                // new tab" and "copy link", and assistive tech announces a link rather than a
+                // button that happens to navigate. `onSelect` still fires, so a router can
+                // preventDefault and push state instead of reloading the document.
+                //
+                // Reference-exact (owner: "birebir Mockifyr"): items carry NO border; the
+                // active one gets the fill plus a short accent bar INSET at its left edge — a
+                // highlight, not a border.
+                const button = item.href ? (
+                  <a key={item.id} href={item.href} aria-current={active ? "page" : undefined} className={itemClass} onClick={item.onSelect}>
+                    {inner}
+                  </a>
+                ) : (
+                  <button key={item.id} aria-current={active ? "page" : undefined} className={itemClass} onClick={item.onSelect}>
+                    {inner}
                   </button>
                 );
                 // Collapsed, the NAME rides a real tooltip to the right of the rail —

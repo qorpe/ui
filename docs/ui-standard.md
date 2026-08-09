@@ -104,7 +104,10 @@ dashboard and its source (not from memory):
    **GROUPED nav with small-caps group labels** — amended after the owner reviewed B1:
    the five modules are ONE family and share ONE `MODULES` group (the subtitle already says Operations — the same word twice in one rail was the redundancy a test caught) under `OVERVIEW`
    (Today), exactly as the reference keeps its whole core domain in a single group. A
-   heading must own several items to earn its place. A surface for a DIFFERENT audience
+   heading must own several items to earn its place. **A nav item that has a URL is a
+   LINK** (`href`), not a button that navigates: an operator watching two screens at once
+   needs ⌘-click, the context menu and "copy link address" — affordances the browser gives
+   free to anchors and to nothing else. A surface for a DIFFERENT audience
    (an API portal, platform settings) becomes its own group; a new operations module
    joins the existing one. Active item = soft fill + a short **inset accent bar** at its left edge (a
    highlight, not a border — items carry no borders at all; amended to match the
