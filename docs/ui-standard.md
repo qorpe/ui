@@ -21,7 +21,11 @@ Lifted verbatim from Mockifyr `ui/src/index.css` — the kit vendors the same st
   active states, CTA. Swap `--primary` to re-skin; NOTHING else changes.
 - **Semantic status ramp is deliberately separate from the accent**: success/warning/
   danger/info/violet, each with `-bg` and `-border` companions — badges, pills, state
-  chips. The accent never carries meaning; the ramp never carries brand.
+  chips. The accent never carries meaning; the ramp never carries brand. **A count is not
+  a state**: a nav badge is neutral until a console asks for a tone, because red is a claim
+  that something is wrong and a number is only a number. The count itself may be a string,
+  so the console keeps its own abbreviation — only it knows when a number stops being
+  readable.
 - **Dark mode is class-driven** (`.dark` on `<html>`) so a customer can force either;
   the sidebar melts into the frame (same token) instead of reading as its own panel.
 - Radii from one `--radius: 0.625rem` (sm/md/lg/xl/2xl derived); one soft
@@ -37,7 +41,11 @@ the primary surface, cards lift on `--background` above `--surface`.
 
 - **The app-shell owns scrolling, never the page** (`body { overflow: hidden }`);
   scrollable regions are explicit `.scroll-area`s with auto-hiding scrollbars
-  (invisible until hover/focus).
+  (invisible until hover/focus). **One exception, asked for by name**: a workspace that
+  fills the surface edge to edge and scrolls its own panes takes `surface="bleed"`, which
+  hands it both the padding and the scrolling. The rule the exception protects is that
+  there is ever only ONE scroller in a column — a workspace inside the padded surface
+  would nest a second, and two scrollbars racing each other make both feel broken.
 - **Focus**: 2px `--ring` outline for keyboard users on buttons/links; form fields
   carry a subtle border tint instead (the heavy ring reads wrong on inputs).
 - **Reduced motion is honored globally** (`prefers-reduced-motion` kills transitions).
@@ -90,7 +98,9 @@ dashboard and its source (not from memory):
 
 1. **Icons: lucide-react**, the family's one set. Sparse by design — nav items, stat
    cards, empty states; never decoration on prose. (Mockifyr already ships it.)
-2. **Sidebar**: brand head (mark + product word + subtitle) · **⌘K search** ·
+2. **Sidebar**: brand head (mark + product word + subtitle — the mark is the shell's
+   `brand` slot, and it is what SURVIVES the collapse, because a rail with neither words
+   nor mark is an anonymous gutter) · **⌘K search** ·
    **GROUPED nav with small-caps group labels** — amended after the owner reviewed B1:
    the five modules are ONE family and share ONE `MODULES` group (the subtitle already says Operations — the same word twice in one rail was the redundancy a test caught) under `OVERVIEW`
    (Today), exactly as the reference keeps its whole core domain in a single group. A

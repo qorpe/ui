@@ -220,6 +220,81 @@ describe("the v1.1 rail (u7-b1)", () => {
     expect(screen.queryByRole("button", { name: /Goldpath Console/ })).not.toBeInTheDocument();
   });
 
+  it("the brand mark rides beside the words, and survives the collapse when they do not", () => {
+    const mark = <svg data-testid="mark" />;
+    const { rerender } = render(
+      <AppShell brand={mark} title="Mockifyr" subtitle="Mock Platform" nav={[item("a")]} activeId="a">x</AppShell>,
+    );
+    expect(screen.getByTestId("mark")).toBeInTheDocument();
+    expect(screen.getByText("Mockifyr")).toBeInTheDocument();
+
+    // Collapsed the words go and the mark stays: a rail with neither is an anonymous gutter.
+    rerender(<AppShell brand={mark} title="Mockifyr" nav={[item("a")]} activeId="a" collapsed>x</AppShell>);
+    expect(screen.getByTestId("mark")).toBeInTheDocument();
+    expect(screen.queryByText("Mockifyr")).not.toBeInTheDocument();
+  });
+
+  it("a brand mark inside the home button goes home with it", async () => {
+    const onHome = vi.fn();
+    render(
+      <AppShell brand={<svg data-testid="mark" />} title="Mockifyr" nav={[item("a")]} activeId="a" onHome={onHome}>x</AppShell>,
+    );
+    await userEvent.click(screen.getByTestId("mark"));
+    expect(onHome).toHaveBeenCalledTimes(1);
+  });
+
+  it("a count badge is NEUTRAL unless the console says it is alarming", () => {
+    render(
+      <AppShell
+        title="t"
+        activeId="a"
+        nav={[
+          { id: "a", label: "Stubs", badge: 12, onSelect: () => {} },
+          { id: "b", label: "Failures", badge: 3, badgeTone: "danger", onSelect: () => {} },
+        ]}
+      >x</AppShell>,
+    );
+
+    // Red is a claim that something is wrong. A stub count is not.
+    expect(screen.getByText("12").className).toContain("text-muted-foreground");
+    expect(screen.getByText("3").className).toContain("text-danger");
+  });
+
+  it("a string badge prints verbatim — the console owns its own abbreviation", () => {
+    render(
+      <AppShell title="t" activeId="a" nav={[{ id: "a", label: "Journal", badge: "1.2k", onSelect: () => {} }]}>x</AppShell>,
+    );
+    expect(screen.getByText("1.2k")).toBeInTheDocument();
+  });
+
+  it("nothing to count shows nothing — zero and an empty string are both silence", () => {
+    render(
+      <AppShell
+        title="t"
+        activeId="a"
+        nav={[
+          { id: "a", label: "Zero", badge: 0, onSelect: () => {} },
+          { id: "b", label: "Empty", badge: "", onSelect: () => {} },
+        ]}
+      >x</AppShell>,
+    );
+    expect(screen.queryByText("0")).not.toBeInTheDocument();
+    // A pill with no number in it is worse than no pill: it reads as a rendering fault.
+    expect(screen.queryAllByTestId("nav-badge")).toHaveLength(0);
+  });
+
+  it("a bleed surface hands padding AND scrolling to the child", () => {
+    const { rerender } = render(<AppShell title="t" nav={[item("a")]} activeId="a">x</AppShell>);
+    expect(screen.getByTestId("shell-surface").className).toContain("p-6");
+    expect(screen.getByTestId("shell-surface").className).toContain("overflow-y-auto");
+
+    // A workspace that scrolls its own panes must not sit inside a second scroller —
+    // nested scroll areas make both feel broken.
+    rerender(<AppShell title="t" nav={[item("a")]} activeId="a" surface="bleed">x</AppShell>);
+    expect(screen.getByTestId("shell-surface").className).not.toContain("p-6");
+    expect(screen.getByTestId("shell-surface").className).toContain("overflow-hidden");
+  });
+
   it("a throwing localStorage never breaks the shell", () => {
     const real = Storage.prototype.getItem;
     Storage.prototype.getItem = () => { throw new Error("private mode"); };

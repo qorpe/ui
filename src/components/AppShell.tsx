@@ -11,8 +11,18 @@ export interface ShellNavItem {
   icon?: ReactNode;
   /** Small-caps group heading this item sits under (ui-standard v1.1 §7.2). */
   group?: string;
-  /** Absent means the capability is present but has nothing to count. */
-  badge?: number;
+  /**
+   * Absent means the capability is present but has nothing to count. A string is printed
+   * verbatim, so a console that abbreviates (`1234` → `1.2k`) keeps its own arithmetic —
+   * only the app knows how big a number has to get before it stops being readable.
+   */
+  badge?: number | string;
+  /**
+   * What the count MEANS. Neutral by default: a number is a number, and red is a claim
+   * that something is wrong (§2 — the ramp never carries meaning it was not given). A
+   * console that badges failures asks for `"danger"` explicitly.
+   */
+  badgeTone?: "neutral" | "danger";
   onSelect: () => void;
 }
 
@@ -22,6 +32,11 @@ export interface ShellService {
 }
 
 export interface AppShellProps {
+  /**
+   * The rail head's mark, left of the product word — ui-standard §7.2 has always read
+   * "brand head (mark + product word + subtitle)" and the shell rendered only the words.
+   */
+  brand?: ReactNode;
   /** Product/tenant word in the rail head — the console is one shell, many services. */
   title: string;
   /** The quiet second line under the title (the reference's "Mock Platform" slot). */
@@ -40,8 +55,24 @@ export interface AppShellProps {
   onHome?: () => void;
   /** Rendered at the rail foot — theme toggle, sign-out, whatever the app owns. */
   footer?: (collapsed: boolean) => ReactNode;
+  /**
+   * How the content surface treats its child. `padded` (the default) is §3's one
+   * scrolling surface. `bleed` hands both padding and scrolling to the child — for a
+   * workspace that fills the surface edge to edge and scrolls its own panes, where an
+   * outer scroller would nest one inside another and make both feel broken.
+   */
+  surface?: "padded" | "bleed";
   /** Strings-as-props (RFC D5): the shell's own chrome copy. */
   labels?: { sections?: string; search?: string; collapse?: string; expand?: string; service?: string };
+}
+
+/**
+ * Whether an item has a count worth printing. A numeric 0 is "nothing to count" and stays
+ * silent; a string is the app's own formatting and is trusted, except when it is empty.
+ */
+function hasBadge(item: ShellNavItem): boolean {
+  if (item.badge === undefined) return false;
+  return typeof item.badge === "number" ? item.badge > 0 : item.badge.length > 0;
 }
 
 /** localStorage key for the persisted rail state — same contract as the reference. */
@@ -65,6 +96,7 @@ export function initialCollapsed(): boolean {
  * rail, not an empty gutter. The PAGE never scrolls; only the content surface does.
  */
 export function AppShell({
+  brand,
   title,
   subtitle,
   nav,
@@ -73,6 +105,7 @@ export function AppShell({
   services,
   activeService,
   collapsed = false,
+  surface = "padded",
   labels = {},
   onToggleCollapsed,
   onSearch,
@@ -112,18 +145,28 @@ export function AppShell({
           className="scroll-area flex h-full flex-col overflow-y-auto px-3 pb-3"
         >
           <div className={`flex items-center py-4 ${collapsed ? "justify-center" : "justify-between px-1"}`}>
-            {!collapsed &&
-              (onHome ? (
-                <button onClick={onHome} className="min-w-0 rounded-lg text-start transition-opacity hover:opacity-70">
-                  <span className="block truncate text-sm font-semibold">{title}</span>
-                  {subtitle && <span className="block truncate text-xs text-faint">{subtitle}</span>}
+            {/* Collapsed, the mark is all that is left of the head — a rail with no words
+                and no mark is an anonymous gutter, which is why it survives the collapse
+                while the words do not. */}
+            {collapsed
+              ? brand && <span className="flex shrink-0 items-center">{brand}</span>
+              : onHome ? (
+                <button onClick={onHome} className="flex min-w-0 items-center gap-2.5 rounded-lg text-start transition-opacity hover:opacity-70">
+                  {brand && <span className="flex shrink-0 items-center">{brand}</span>}
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold">{title}</span>
+                    {subtitle && <span className="block truncate text-xs text-faint">{subtitle}</span>}
+                  </span>
                 </button>
               ) : (
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold">{title}</span>
-                  {subtitle && <span className="block truncate text-xs text-faint">{subtitle}</span>}
+                <span className="flex min-w-0 items-center gap-2.5">
+                  {brand && <span className="flex shrink-0 items-center">{brand}</span>}
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold">{title}</span>
+                    {subtitle && <span className="block truncate text-xs text-faint">{subtitle}</span>}
+                  </span>
                 </span>
-              ))}
+              )}
             {onToggleCollapsed && (
               <button
                 aria-label={collapsed ? text.expand : text.collapse}
@@ -206,8 +249,15 @@ export function AppShell({
                     {item.icon && <span aria-hidden="true" className="flex shrink-0 items-center [&>svg]:h-[18px] [&>svg]:w-[18px]">{item.icon}</span>}
                     <span className={collapsed ? "sr-only" : "truncate"}>{item.label}</span>
                     {!item.icon && collapsed && <span aria-hidden="true">{item.label.slice(0, 1).toUpperCase()}</span>}
-                    {item.badge !== undefined && item.badge > 0 && !collapsed && (
-                      <span className="ms-auto rounded-full bg-danger-bg px-1.5 text-xs text-danger">{item.badge}</span>
+                    {hasBadge(item) && !collapsed && (
+                      <span
+                        data-testid="nav-badge"
+                        className={`ms-auto rounded-full px-1.5 text-xs ${
+                          item.badgeTone === "danger" ? "bg-danger-bg text-danger" : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
                     )}
                   </button>
                 );
@@ -226,7 +276,10 @@ export function AppShell({
         {/* The ONE scrolling surface — the frame stays put while content moves (§3). */}
         <main
           data-testid="shell-surface"
-          className="scroll-area h-full overflow-y-auto rounded-2xl border border-border bg-surface p-6"
+          data-surface={surface}
+          className={`h-full rounded-2xl border border-border bg-surface ${
+            surface === "bleed" ? "overflow-hidden" : "scroll-area overflow-y-auto p-6"
+          }`}
           style={{ boxShadow: "var(--shadow-surface)" }}
         >
           {children}

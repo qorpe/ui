@@ -222,12 +222,15 @@ export const DEMO_RENDERERS: Record<string, () => ReactElement> = {
   shell: () => (
     <div className="h-72 overflow-hidden rounded-xl border border-border">
       <AppShell
+        brand={<span aria-hidden="true" className="grid size-7 place-items-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">q</span>}
         title="qorpe console"
         subtitle="docs"
         activeId="runs"
         nav={[
           { id: "home", label: "Today", icon: <Home size={16} />, onSelect: () => {} },
-          { id: "runs", label: "Runs", icon: <Package size={16} />, group: "Operations", badge: 3, onSelect: () => {} },
+          // Two tones, side by side: a count is neutral, an alarm is asked for.
+          { id: "runs", label: "Runs", icon: <Package size={16} />, group: "Operations", badge: "1.2k", onSelect: () => {} },
+          { id: "failed", label: "Failed", icon: <Package size={16} />, group: "Operations", badge: 3, badgeTone: "danger", onSelect: () => {} },
           { id: "settings", label: "Settings", icon: <Settings size={16} />, group: "System", onSelect: () => {} },
         ]}
       >
