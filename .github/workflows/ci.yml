@@ -28,6 +28,15 @@ jobs:
         run: pnpm test
       - name: build
         run: pnpm build
+      - name: inventory is generated, never typed (ui-standard §4)
+        run: |
+          node scripts/inventory.mjs
+          if ! git diff --quiet -- docs/inventory.md; then
+            echo "inventory: docs/inventory.md is stale — run 'node scripts/inventory.mjs' and commit."
+            git --no-pager diff -- docs/inventory.md
+            exit 1
+          fi
+          echo "inventory: current."
       - name: changeset gate (G1) — src changes must carry a changeset
         if: github.event_name == 'pull_request'
         env:
@@ -39,6 +48,29 @@ jobs:
             exit 1
           fi
           echo "G1: ok."
+      - name: standard-sync gate (G7) — a rule and its enforcer travel together
+        # The escape hatch is deliberate and NAMED: correcting the standard's own prose
+        # (a stale roster, a wrong gate number) touches no component, and a gate with no
+        # honest way out gets disabled instead of respected. The label makes the exception
+        # visible in the PR list rather than silent in a commit message.
+        if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'standard-only')
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          # The philosophy's keystone was honour-system until now: ui-standard.md claimed
+          # "a rule change and the component enforcing it land in the same PR" while no gate
+          # ever read the file. A rule nobody enforces is a wish. Docs-only PRs (README,
+          # inventory, migrations) are exempt — only the STANDARD binds to src/.
+          changed=$(git diff --name-only "$BASE_SHA"...HEAD)
+          standard=$(echo "$changed" | grep -c '^docs/ui-standard\.md$' || true)
+          src=$(echo "$changed" | grep -c '^src/' || true)
+          if [ "$standard" -gt 0 ] && [ "$src" -eq 0 ]; then
+            echo "G7: docs/ui-standard.md changed with no src/ change — a rule with no enforcer."
+            echo "     If the rule is already enforced, say WHICH component in the PR body and add"
+            echo "     the label 'standard-only' to override."
+            exit 1
+          fi
+          echo "G7: ok."
 
   visual:
     runs-on: ubuntu-latest
