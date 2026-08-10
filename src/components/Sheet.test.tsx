@@ -72,6 +72,37 @@ describe("Sheet (v1.1 §7.4)", () => {
     expect(screen.getByText("One run, in full.")).not.toHaveClass("sr-only");
   });
 
+  it("a bleed body hands padding AND scrolling to the child", async () => {
+    // A detail panel whose tabs scroll their own panes must not sit inside a second scroller;
+    // two scrollbars racing each other make both feel broken. Same choice AppShell offers for
+    // its content surface, and for the same reason.
+    function Bleeding() {
+      const [open, setOpen] = useState(true);
+      return (
+        <Sheet open={open} onOpenChange={setOpen} title="Run run-9f21" body="bleed">
+          <p>body</p>
+        </Sheet>
+      );
+    }
+    render(<Bleeding />);
+
+    const shell = await screen.findByTestId("sheet-body");
+    expect(shell).toHaveAttribute("data-body", "bleed");
+    expect(shell.className).not.toContain("overflow-y-auto");
+    expect(shell.className).not.toContain("px-6");
+  });
+
+  it("the body is padded and scrolls by default — nothing existing changes", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.click(screen.getByRole("button", { name: "open it" }));
+
+    const shell = await screen.findByTestId("sheet-body");
+    expect(shell).toHaveAttribute("data-body", "padded");
+    expect(shell.className).toContain("overflow-y-auto");
+    expect(shell.className).toContain("px-6");
+  });
+
   it("the close button is a named control, not a bare ×", async () => {
     const user = userEvent.setup();
     render(<Harness />);
