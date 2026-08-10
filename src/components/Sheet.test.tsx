@@ -32,6 +32,46 @@ describe("Sheet (v1.1 §7.4)", () => {
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });
 
+  it("a custom header replaces what is SEEN and keeps the accessible name", async () => {
+    // mockifyr's message and journal panels build interactive headers — a hover-to-copy
+    // subject, a metadata row that changes shape per channel. A plain string title cannot
+    // carry those, and a dialog with no accessible name cannot be announced. Both, then.
+    function Custom() {
+      const [open, setOpen] = useState(true);
+      return (
+        <Sheet
+          open={open}
+          onOpenChange={setOpen}
+          title="Run run-9f21"
+          description="One run, in full."
+          header={<button>copy subject</button>}
+        >
+          <p>body</p>
+        </Sheet>
+      );
+    }
+    render(<Custom />);
+
+    // Announced by the title even though the title is not drawn.
+    const dialog = await screen.findByRole("dialog", { name: "Run run-9f21" });
+    expect(await screen.findByRole("button", { name: "copy subject" })).toBeInTheDocument();
+
+    // The default block is hidden rather than removed: Radix requires a Title, and omitting
+    // one trades a visual choice for a broken a11y tree.
+    expect(dialog.querySelector("h2")).toHaveClass("sr-only");
+    expect(screen.getByText("One run, in full.")).toHaveClass("sr-only");
+  });
+
+  it("without a header the title and description are drawn as before", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.click(screen.getByRole("button", { name: "open it" }));
+
+    const dialog = await screen.findByRole("dialog", { name: "Run run-9f21" });
+    expect(dialog.querySelector("h2")).not.toHaveClass("sr-only");
+    expect(screen.getByText("One run, in full.")).not.toHaveClass("sr-only");
+  });
+
   it("the close button is a named control, not a bare ×", async () => {
     const user = userEvent.setup();
     render(<Harness />);

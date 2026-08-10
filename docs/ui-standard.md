@@ -237,7 +237,10 @@ Same rule as §7/§8: kit-level, swept everywhere.
 3. **Density is a feature**: the journal's comfortable/compact toggle comes to every
    family table — one control, table rhythm swaps (py-3 ↔ py-1.5), persisted like
    the rail state.
-4. **Sheet details get the journal's anatomy**: a header strip (method/state badge +
+4. **A sheet header may be INTERACTIVE.** The strip takes a `header` slot for a hover-to-copy
+   line or a metadata row that changes shape with the entity; `title` stays required and becomes
+   the accessible name, because a name cannot be derived from arbitrary nodes and a dialog
+   without one cannot be announced. **Sheet details get the journal's anatomy**: a header strip (method/state badge +
    identity + status), small-caps section headings, key-value rows as bordered
    cards, and code/JSON blocks with a copy button — never a plain run of text.
 5. **Add/edit leaves the inline-below pattern**: create/reschedule/hold forms open
