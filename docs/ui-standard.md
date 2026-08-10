@@ -237,7 +237,10 @@ Same rule as §7/§8: kit-level, swept everywhere.
 3. **Density is a feature**: the journal's comfortable/compact toggle comes to every
    family table — one control, table rhythm swaps (py-3 ↔ py-1.5), persisted like
    the rail state.
-4. **A sheet header may be INTERACTIVE.** The strip takes a `header` slot for a hover-to-copy
+4. **A sheet body may own its own scrolling** (`body="bleed"`), for a panel whose tabs scroll
+   their own panes — the rule it protects is the one §3 states for the shell: only ONE scroller
+   per column, or two scrollbars race each other and both feel broken. **A sheet header may be
+   INTERACTIVE.** The strip takes a `header` slot for a hover-to-copy
    line or a metadata row that changes shape with the entity; `title` stays required and becomes
    the accessible name, because a name cannot be derived from arbitrary nodes and a dialog
    without one cannot be announced. **Sheet details get the journal's anatomy**: a header strip (method/state badge +

@@ -23,6 +23,14 @@ export interface SheetProps {
   children: ReactNode;
   /** The panel's width ceiling in px (adopter feedback: wide journal details, narrow behavior panels). */
   maxWidth?: number;
+  /**
+   * How the panel treats its body. `padded` (the default) is the one scrolling region. `bleed`
+   * hands padding and scrolling to the child — for a detail panel whose tabs scroll their own
+   * panes, where an outer scroller would nest one inside another and make both feel broken.
+   *
+   * The same choice `AppShell` offers for its content surface, and for the same reason.
+   */
+  body?: "padded" | "bleed";
 }
 
 /**
@@ -30,7 +38,7 @@ export interface SheetProps {
  * opens the entity HERE instead of unfolding below the table. Radix Dialog carries the
  * a11y weight (focus trap, Escape, aria wiring) — the same primitive the reference uses.
  */
-export function Sheet({ open, onOpenChange, title, description, header, children, closeLabel, maxWidth = 680 }: SheetProps) {
+export function Sheet({ open, onOpenChange, title, description, header, children, closeLabel, maxWidth = 680, body = "padded" }: SheetProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -51,7 +59,11 @@ export function Sheet({ open, onOpenChange, title, description, header, children
             />
             {header}
           </div>
-          <div className="scroll-area min-h-0 flex-1 overflow-y-auto px-6 py-4">{children}</div>
+          {body === "bleed" ? (
+            <div data-testid="sheet-body" data-body="bleed" className="flex min-h-0 flex-1 flex-col">{children}</div>
+          ) : (
+            <div data-testid="sheet-body" data-body="padded" className="scroll-area min-h-0 flex-1 overflow-y-auto px-6 py-4">{children}</div>
+          )}
           <ModalClose className="absolute end-4 top-4" label={closeLabel} />
         </Dialog.Content>
       </Dialog.Portal>
