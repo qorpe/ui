@@ -205,7 +205,7 @@ export function AppShell({
                   className="flex h-9 w-full items-center gap-2.5 rounded-lg border border-border bg-muted/60 px-3 text-sm text-muted-foreground transition-colors hover:border-border-strong"
                 >
                   <Search className="size-4" aria-hidden="true" />
-                  <span>Search</span>
+                  <span>{text.search}</span>
                   <kbd className="ms-auto rounded-md border border-border bg-background px-1.5 font-mono text-[11px]">⌘K</kbd>
                 </button>
               )}
