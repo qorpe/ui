@@ -148,7 +148,7 @@ export function AppShell({
         <nav
           data-testid="shell-rail"
           aria-label={text.sections}
-          className="scroll-area flex h-full flex-col overflow-y-auto px-3 pb-3"
+          className="flex h-full flex-col overflow-hidden px-3 pb-3"
         >
           <div className={`flex items-center py-4 ${collapsed ? "justify-center" : "justify-between px-1"}`}>
             {/* Collapsed, the mark is all that is left of the head — a rail with no words
@@ -226,6 +226,10 @@ export function AppShell({
             </div>
           )}
 
+          {/* Only the LIST scrolls. The footer holds the tenant/service switcher — the control
+              that scopes everything on screen — and a console whose nav has grown past the
+              viewport must not push it below the fold. */}
+          <div data-testid="shell-nav-scroll" className="scroll-area -mx-3 min-h-0 flex-1 overflow-y-auto px-3">
           {groups.map((group) => (
             <div key={group.name ?? "·"} className="mb-1">
               {group.name && !collapsed && (
@@ -287,7 +291,9 @@ export function AppShell({
             </div>
           ))}
 
-          {footer && <div className="mt-auto px-1 pb-1 pt-3">{footer(collapsed)}</div>}
+          </div>
+
+          {footer && <div className="shrink-0 px-1 pb-1 pt-3">{footer(collapsed)}</div>}
         </nav>
       </aside>
 
