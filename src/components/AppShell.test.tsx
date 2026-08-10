@@ -99,9 +99,11 @@ describe("the app shell (ui-standard-v1 §3 — the surface scrolls, never the p
     const many = Array.from({ length: 24 }, (_, i) => nav({ id: `cap-${i}`, label: `Capability ${i}` }));
     render(<AppShell title="CorPay" nav={many} activeId="cap-0"><p>c</p></AppShell>);
 
-    // The frame stays put, but the rail must not clip what it was given.
+    // The frame stays put, but the rail must not clip what it was given. The scroller is the
+    // nav LIST rather than the whole rail, so that a footer pinned beneath it survives a nav
+    // this long — same guarantee, one element in.
     expect(screen.getByTestId("app-shell").className).toContain("overflow-hidden");
-    expect(screen.getByTestId("shell-rail").className).toContain("overflow-y-auto");
+    expect(screen.getByTestId("shell-nav-scroll").className).toContain("overflow-y-auto");
     expect(screen.getByRole("button", { name: "Capability 23" })).toBeInTheDocument();
   });
 
@@ -347,6 +349,22 @@ describe("the v1.1 rail (u7-b1)", () => {
 
     expect(screen.getByRole("button", { name: /Ara/ })).toBeInTheDocument();
     expect(screen.queryByText("Search")).not.toBeInTheDocument();
+  });
+
+  it("the footer is pinned OUTSIDE the scrolling list — a long nav must not hide the switcher", () => {
+    // The footer holds the tenant/service switcher, the control that scopes everything on
+    // screen. A console whose nav has outgrown the viewport would otherwise push it below
+    // the fold, and scrolling to change tenant is not a thing anybody should have to learn.
+    render(
+      <AppShell title="t" nav={[item("a")]} activeId="a" footer={() => <div data-testid="foot">switcher</div>}>x</AppShell>,
+    );
+
+    const scroller = screen.getByTestId("shell-nav-scroll");
+    expect(scroller.className).toContain("overflow-y-auto");
+    expect(scroller).not.toContainElement(screen.getByTestId("foot"));
+
+    // And the rail itself no longer scrolls as a whole, or the pin would be undone by it.
+    expect(screen.getByTestId("shell-rail").className).toContain("overflow-hidden");
   });
 
   it("a throwing localStorage never breaks the shell", () => {
