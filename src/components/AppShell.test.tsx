@@ -337,6 +337,18 @@ describe("the v1.1 rail (u7-b1)", () => {
     expect(linked.className).toBe(plain.className);
   });
 
+  it("the VISIBLE search label is translatable, not just the tooltip", () => {
+    // The kit ships no i18n framework precisely because strings are props (README, "rules
+    // of the house"). A label that only reached the tooltip left the one word an operator
+    // actually reads stuck in English.
+    render(
+      <AppShell title="t" nav={[item("a")]} activeId="a" onSearch={() => {}} labels={{ search: "Ara" }}>x</AppShell>,
+    );
+
+    expect(screen.getByRole("button", { name: /Ara/ })).toBeInTheDocument();
+    expect(screen.queryByText("Search")).not.toBeInTheDocument();
+  });
+
   it("a throwing localStorage never breaks the shell", () => {
     const real = Storage.prototype.getItem;
     Storage.prototype.getItem = () => { throw new Error("private mode"); };
