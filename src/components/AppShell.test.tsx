@@ -236,23 +236,6 @@ describe("the v1.1 rail (u7-b1)", () => {
     expect(screen.queryByText("Mockifyr")).not.toBeInTheDocument();
   });
 
-  it("collapsed, the head stacks so the mark keeps the icon column's centre", () => {
-    const mark = <svg data-testid="mark" />;
-    const head = () => screen.getByTestId("mark").closest("div")!;
-    const { rerender } = render(
-      <AppShell brand={mark} title="Mockifyr" nav={[item("a")]} activeId="a" onToggleCollapsed={() => {}}>x</AppShell>,
-    );
-    expect(head().className).not.toContain("flex-col");
-
-    // jsdom has no layout, so the class IS what is assertable — and it is also the whole fix.
-    // Side by side, the mark and the toggle are both shrink-0 and want 70px of the 50px the
-    // rail leaves; the overflow pushed the mark off the column every other row centres on.
-    rerender(
-      <AppShell brand={mark} title="Mockifyr" nav={[item("a")]} activeId="a" collapsed onToggleCollapsed={() => {}}>x</AppShell>,
-    );
-    expect(head().className).toContain("flex-col");
-  });
-
   it("a brand mark inside the home button goes home with it", async () => {
     const onHome = vi.fn();
     render(
@@ -262,24 +245,32 @@ describe("the v1.1 rail (u7-b1)", () => {
     expect(onHome).toHaveBeenCalledTimes(1);
   });
 
-  it("collapsed, the mark is a rail item — pressable, and named by the word it replaced", async () => {
+  it("collapsed, the mark and the expand control share ONE slot — the head never gains a row", async () => {
+    const onToggleCollapsed = vi.fn();
     const onHome = vi.fn();
     render(
-      <AppShell brand={<svg data-testid="mark" />} title="Mockifyr" nav={[item("a")]} activeId="a" collapsed onHome={onHome}>x</AppShell>,
+      <AppShell brand={<svg data-testid="mark" />} title="Mockifyr" nav={[item("a")]} activeId="a" collapsed
+        onHome={onHome} onToggleCollapsed={onToggleCollapsed}>x</AppShell>,
     );
-    // The words are gone, so the title is the only name this control can carry.
-    const home = screen.getByRole("button", { name: "Mockifyr" });
-    expect(home).toContainElement(screen.getByTestId("mark"));
-    await userEvent.click(home);
-    expect(onHome).toHaveBeenCalledTimes(1);
+    // Exactly one control, holding the mark. A second would push the icon column down a row and
+    // make the head the only part of the rail whose height moves between states.
+    const slot = screen.getByRole("button", { name: /expand navigation/i });
+    expect(screen.getAllByRole("button", { name: /expand navigation/i })).toHaveLength(1);
+    expect(slot).toContainElement(screen.getByTestId("mark"));
+
+    // Its action does not depend on the pointer being over it — which is what makes the glyph
+    // swap an affordance rather than a mode, and what keeps it working on a device with no hover.
+    await userEvent.click(slot);
+    expect(onToggleCollapsed).toHaveBeenCalledTimes(1);
+    expect(onHome).not.toHaveBeenCalled();
   });
 
-  it("collapsed without onHome the mark stays plain — nothing pretends to be pressable", () => {
+  it("collapsed with no way to expand, the mark is just the mark", () => {
     render(
       <AppShell brand={<svg data-testid="mark" />} title="Mockifyr" nav={[item("a")]} activeId="a" collapsed>x</AppShell>,
     );
     expect(screen.getByTestId("mark")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Mockifyr" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /expand navigation/i })).not.toBeInTheDocument();
   });
 
   it("collapsed, the toggle takes a rail item's slot instead of its own smaller one", () => {

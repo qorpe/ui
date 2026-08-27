@@ -137,10 +137,37 @@ export function AppShell({
     else groups.push({ name: item.group, items: [item] });
   }
 
-  // Collapsed, the toggle is a rail ITEM like everything under it: the same 36x40 slot, the same
-  // tooltip on the right. Expanded it stays a small affordance tucked against the head's right
-  // edge, where a full icon-column slot would only add padding nobody asked for.
-  const toggleButton = onToggleCollapsed && (
+  // Collapsed, the head is ONE slot: the mark at rest, the expand chevron under the pointer, in
+  // the same 36x40 box every item below occupies. Two controls stacked there would push the icon
+  // column down by a row and make the head the only part of the rail whose height moves.
+  //
+  // That slot's ACTION never changes — it expands, whether it is showing the mark or the chevron —
+  // so the swap is an affordance and not a mode. A touch device, which has no hover at all, still
+  // gets a mark it can tap to open the rail, and the accessible name says "expand" throughout.
+  //
+  // Going home is not on it. A rail that is already showing its nav has a Dashboard item two rows
+  // down; a hidden second action on a control whose glyph changes under the cursor is a guess.
+  const collapsedHead = collapsed && brand && onToggleCollapsed ? (
+    <Tooltip label={text.expand} side="right">
+      <button
+        aria-label={text.expand}
+        aria-expanded={false}
+        onClick={onToggleCollapsed}
+        className="group relative flex h-9 w-10 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-muted"
+      >
+        <span className="flex items-center transition-opacity group-hover:opacity-0 group-focus-visible:opacity-0 [&>img]:w-7 [&>svg]:w-7">{brand}</span>
+        <ChevronsRight
+          size={18}
+          aria-hidden="true"
+          className="absolute text-faint opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+        />
+      </button>
+    </Tooltip>
+  ) : null;
+
+  // The standalone toggle survives for the cases the swap cannot cover: expanded, where it is a
+  // small affordance at the head's right edge, and collapsed with no mark to swap.
+  const toggleButton = onToggleCollapsed && !collapsedHead && (
     <button
       aria-label={collapsed ? text.expand : text.collapse}
       aria-expanded={!collapsed}
@@ -167,37 +194,17 @@ export function AppShell({
           aria-label={text.sections}
           className="flex h-full flex-col overflow-hidden px-3 pb-3"
         >
-          {/* Collapsed the head STACKS, and that is a fix rather than a preference: the rail
-              leaves 50px between its own padding, while the mark and the toggle are both
-              shrink-0 and together want 70px. justify-center split the 20px overflow evenly,
-              so the mark sat 15px left of the icon column every other row lines up on — a
-              wide mark hid it, a square one made it obvious. Stacked, both centre on that
-              column, and neither has to give up size to do it. */}
-          <div className={`flex items-center py-4 ${collapsed ? "flex-col gap-2" : "justify-between"}`}>
+          {/* Collapsed the head holds exactly one 36x40 slot, so it neither overflows the 50px
+              the rail leaves nor changes height between states. Everything the head has to say
+              collapsed is said by that one square. */}
+          <div className={`flex items-center py-4 ${collapsed ? "justify-center" : "justify-between"}`}>
             {/* Collapsed, the mark is all that is left of the head — a rail with no words
                 and no mark is an anonymous gutter, which is why it survives the collapse
                 while the words do not. */}
             {collapsed
-              ? brand && (
-                // Collapsed, the mark becomes a rail ITEM: the same 36x40 slot, the same hover
-                // wash, the same tooltip-on-the-right as every icon under it. At the size the
-                // consumer sizes it for the expanded head it towered over that column and read
-                // as chrome rather than as something you could press — and it was in fact the
-                // one thing in the rail that did nothing when clicked.
-                onHome ? (
-                  <Tooltip label={title} side="right">
-                    <button
-                      onClick={onHome}
-                      aria-label={title}
-                      className="flex h-9 w-10 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-muted [&>img]:w-7 [&>svg]:w-7"
-                    >
-                      {brand}
-                    </button>
-                  </Tooltip>
-                ) : (
-                  <span className="flex h-9 w-10 shrink-0 items-center justify-center [&>img]:w-7 [&>svg]:w-7">{brand}</span>
-                )
-              )
+              ? collapsedHead ?? (brand && (
+                <span className="flex h-9 w-10 shrink-0 items-center justify-center [&>img]:w-7 [&>svg]:w-7">{brand}</span>
+              ))
               : onHome ? (
                 <button onClick={onHome} className="flex min-w-0 items-center gap-2.5 rounded-lg px-2.5 py-1 text-start transition-colors hover:bg-muted">
                   {brand && <span className="flex shrink-0 items-center">{brand}</span>}
