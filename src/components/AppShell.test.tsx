@@ -262,6 +262,41 @@ describe("the v1.1 rail (u7-b1)", () => {
     expect(onHome).toHaveBeenCalledTimes(1);
   });
 
+  it("collapsed, the mark is a rail item — pressable, and named by the word it replaced", async () => {
+    const onHome = vi.fn();
+    render(
+      <AppShell brand={<svg data-testid="mark" />} title="Mockifyr" nav={[item("a")]} activeId="a" collapsed onHome={onHome}>x</AppShell>,
+    );
+    // The words are gone, so the title is the only name this control can carry.
+    const home = screen.getByRole("button", { name: "Mockifyr" });
+    expect(home).toContainElement(screen.getByTestId("mark"));
+    await userEvent.click(home);
+    expect(onHome).toHaveBeenCalledTimes(1);
+  });
+
+  it("collapsed without onHome the mark stays plain — nothing pretends to be pressable", () => {
+    render(
+      <AppShell brand={<svg data-testid="mark" />} title="Mockifyr" nav={[item("a")]} activeId="a" collapsed>x</AppShell>,
+    );
+    expect(screen.getByTestId("mark")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Mockifyr" })).not.toBeInTheDocument();
+  });
+
+  it("collapsed, the toggle takes a rail item's slot instead of its own smaller one", () => {
+    const slot = (el: HTMLElement) =>
+      el.className.split(" ").filter((c) => ["h-9", "w-10", "rounded-lg"].includes(c)).sort().join(" ");
+    const { rerender } = render(
+      <AppShell title="t" nav={[item("a")]} activeId="a" collapsed onToggleCollapsed={() => {}}>x</AppShell>,
+    );
+    // The measure is the nav item beside it, not a literal — the two must agree, whatever they are.
+    expect(slot(screen.getByRole("button", { name: /expand navigation/i })))
+      .toBe(slot(screen.getByRole("button", { name: "a" })));
+
+    // Expanded it is not in that column at all, so it keeps its own smaller affordance.
+    rerender(<AppShell title="t" nav={[item("a")]} activeId="a" onToggleCollapsed={() => {}}>x</AppShell>);
+    expect(screen.getByRole("button", { name: /collapse navigation/i }).className).toContain("p-1.5");
+  });
+
   it("a count badge is NEUTRAL unless the console says it is alarming", () => {
     render(
       <AppShell
