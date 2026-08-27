@@ -20,3 +20,7 @@ title, which is the word it replaced.
 The toggle kept a `p-1.5` box of its own, 30px against the column's 36. Collapsed it takes the
 same slot and tooltip; expanded it stays the small affordance at the head's right edge, where a
 full slot would only add padding.
+
+Expanded, the brand head faded on hover — the only hover in the rail that was not a background
+change. It now takes the same rounded box, wash and `px-2.5` as the items under it, and the head
+gives up its own `px-1` so the two washes start on the same line rather than four pixels apart.

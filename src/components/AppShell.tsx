@@ -173,7 +173,7 @@ export function AppShell({
               so the mark sat 15px left of the icon column every other row lines up on — a
               wide mark hid it, a square one made it obvious. Stacked, both centre on that
               column, and neither has to give up size to do it. */}
-          <div className={`flex items-center py-4 ${collapsed ? "flex-col gap-2" : "justify-between px-1"}`}>
+          <div className={`flex items-center py-4 ${collapsed ? "flex-col gap-2" : "justify-between"}`}>
             {/* Collapsed, the mark is all that is left of the head — a rail with no words
                 and no mark is an anonymous gutter, which is why it survives the collapse
                 while the words do not. */}
@@ -199,7 +199,7 @@ export function AppShell({
                 )
               )
               : onHome ? (
-                <button onClick={onHome} className="flex min-w-0 items-center gap-2.5 rounded-lg text-start transition-opacity hover:opacity-70">
+                <button onClick={onHome} className="flex min-w-0 items-center gap-2.5 rounded-lg px-2.5 py-1 text-start transition-colors hover:bg-muted">
                   {brand && <span className="flex shrink-0 items-center">{brand}</span>}
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold">{title}</span>
@@ -207,7 +207,7 @@ export function AppShell({
                   </span>
                 </button>
               ) : (
-                <span className="flex min-w-0 items-center gap-2.5">
+                <span className="flex min-w-0 items-center gap-2.5 px-2.5 py-1">
                   {brand && <span className="flex shrink-0 items-center">{brand}</span>}
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold">{title}</span>

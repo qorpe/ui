@@ -297,6 +297,19 @@ describe("the v1.1 rail (u7-b1)", () => {
     expect(screen.getByRole("button", { name: /collapse navigation/i }).className).toContain("p-1.5");
   });
 
+  it("expanded, the brand head hovers like the items under it, not like a fading link", () => {
+    render(
+      <AppShell brand={<svg data-testid="mark" />} title="Mockifyr" nav={[item("a"), item("b")]} activeId="a" onHome={() => {}}>x</AppShell>,
+    );
+    const head = screen.getByRole("button", { name: /Mockifyr/ });
+    // The RESTING item, not the active one — the active row wears the accent instead of a hover.
+    const navItem = screen.getByRole("button", { name: "b" });
+    // The measure is the item beside it: whatever the rail's hover is, the head must use it.
+    for (const c of ["hover:bg-muted", "rounded-lg", "px-2.5"]) expect(navItem.className).toContain(c);
+    for (const c of ["hover:bg-muted", "rounded-lg", "px-2.5"]) expect(head.className).toContain(c);
+    expect(head.className).not.toContain("hover:opacity-70");
+  });
+
   it("a count badge is NEUTRAL unless the console says it is alarming", () => {
     render(
       <AppShell
