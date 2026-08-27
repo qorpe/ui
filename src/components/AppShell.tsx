@@ -150,7 +150,13 @@ export function AppShell({
           aria-label={text.sections}
           className="flex h-full flex-col overflow-hidden px-3 pb-3"
         >
-          <div className={`flex items-center py-4 ${collapsed ? "justify-center" : "justify-between px-1"}`}>
+          {/* Collapsed the head STACKS, and that is a fix rather than a preference: the rail
+              leaves 50px between its own padding, while the mark and the toggle are both
+              shrink-0 and together want 70px. justify-center split the 20px overflow evenly,
+              so the mark sat 15px left of the icon column every other row lines up on — a
+              wide mark hid it, a square one made it obvious. Stacked, both centre on that
+              column, and neither has to give up size to do it. */}
+          <div className={`flex items-center py-4 ${collapsed ? "flex-col gap-2" : "justify-between px-1"}`}>
             {/* Collapsed, the mark is all that is left of the head — a rail with no words
                 and no mark is an anonymous gutter, which is why it survives the collapse
                 while the words do not. */}

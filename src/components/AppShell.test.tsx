@@ -236,6 +236,23 @@ describe("the v1.1 rail (u7-b1)", () => {
     expect(screen.queryByText("Mockifyr")).not.toBeInTheDocument();
   });
 
+  it("collapsed, the head stacks so the mark keeps the icon column's centre", () => {
+    const mark = <svg data-testid="mark" />;
+    const head = () => screen.getByTestId("mark").closest("div")!;
+    const { rerender } = render(
+      <AppShell brand={mark} title="Mockifyr" nav={[item("a")]} activeId="a" onToggleCollapsed={() => {}}>x</AppShell>,
+    );
+    expect(head().className).not.toContain("flex-col");
+
+    // jsdom has no layout, so the class IS what is assertable — and it is also the whole fix.
+    // Side by side, the mark and the toggle are both shrink-0 and want 70px of the 50px the
+    // rail leaves; the overflow pushed the mark off the column every other row centres on.
+    rerender(
+      <AppShell brand={mark} title="Mockifyr" nav={[item("a")]} activeId="a" collapsed onToggleCollapsed={() => {}}>x</AppShell>,
+    );
+    expect(head().className).toContain("flex-col");
+  });
+
   it("a brand mark inside the home button goes home with it", async () => {
     const onHome = vi.fn();
     render(
