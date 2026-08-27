@@ -245,6 +245,62 @@ describe("the v1.1 rail (u7-b1)", () => {
     expect(onHome).toHaveBeenCalledTimes(1);
   });
 
+  it("collapsed, the mark and the expand control share ONE slot — the head never gains a row", async () => {
+    const onToggleCollapsed = vi.fn();
+    const onHome = vi.fn();
+    render(
+      <AppShell brand={<svg data-testid="mark" />} title="Mockifyr" nav={[item("a")]} activeId="a" collapsed
+        onHome={onHome} onToggleCollapsed={onToggleCollapsed}>x</AppShell>,
+    );
+    // Exactly one control, holding the mark. A second would push the icon column down a row and
+    // make the head the only part of the rail whose height moves between states.
+    const slot = screen.getByRole("button", { name: /expand navigation/i });
+    expect(screen.getAllByRole("button", { name: /expand navigation/i })).toHaveLength(1);
+    expect(slot).toContainElement(screen.getByTestId("mark"));
+
+    // Its action does not depend on the pointer being over it — which is what makes the glyph
+    // swap an affordance rather than a mode, and what keeps it working on a device with no hover.
+    await userEvent.click(slot);
+    expect(onToggleCollapsed).toHaveBeenCalledTimes(1);
+    expect(onHome).not.toHaveBeenCalled();
+  });
+
+  it("collapsed with no way to expand, the mark is just the mark", () => {
+    render(
+      <AppShell brand={<svg data-testid="mark" />} title="Mockifyr" nav={[item("a")]} activeId="a" collapsed>x</AppShell>,
+    );
+    expect(screen.getByTestId("mark")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /expand navigation/i })).not.toBeInTheDocument();
+  });
+
+  it("collapsed, the toggle takes a rail item's slot instead of its own smaller one", () => {
+    const slot = (el: HTMLElement) =>
+      el.className.split(" ").filter((c) => ["h-9", "w-10", "rounded-lg"].includes(c)).sort().join(" ");
+    const { rerender } = render(
+      <AppShell title="t" nav={[item("a")]} activeId="a" collapsed onToggleCollapsed={() => {}}>x</AppShell>,
+    );
+    // The measure is the nav item beside it, not a literal — the two must agree, whatever they are.
+    expect(slot(screen.getByRole("button", { name: /expand navigation/i })))
+      .toBe(slot(screen.getByRole("button", { name: "a" })));
+
+    // Expanded it is not in that column at all, so it keeps its own smaller affordance.
+    rerender(<AppShell title="t" nav={[item("a")]} activeId="a" onToggleCollapsed={() => {}}>x</AppShell>);
+    expect(screen.getByRole("button", { name: /collapse navigation/i }).className).toContain("p-1.5");
+  });
+
+  it("expanded, the brand head hovers like the items under it, not like a fading link", () => {
+    render(
+      <AppShell brand={<svg data-testid="mark" />} title="Mockifyr" nav={[item("a"), item("b")]} activeId="a" onHome={() => {}}>x</AppShell>,
+    );
+    const head = screen.getByRole("button", { name: /Mockifyr/ });
+    // The RESTING item, not the active one — the active row wears the accent instead of a hover.
+    const navItem = screen.getByRole("button", { name: "b" });
+    // The measure is the item beside it: whatever the rail's hover is, the head must use it.
+    for (const c of ["hover:bg-muted", "rounded-lg", "px-2.5"]) expect(navItem.className).toContain(c);
+    for (const c of ["hover:bg-muted", "rounded-lg", "px-2.5"]) expect(head.className).toContain(c);
+    expect(head.className).not.toContain("hover:opacity-70");
+  });
+
   it("a count badge is NEUTRAL unless the console says it is alarming", () => {
     render(
       <AppShell

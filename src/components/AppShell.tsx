@@ -137,6 +137,50 @@ export function AppShell({
     else groups.push({ name: item.group, items: [item] });
   }
 
+  // Collapsed, the head is ONE slot: the mark at rest, the expand chevron under the pointer, in
+  // the same 36x40 box every item below occupies. Two controls stacked there would push the icon
+  // column down by a row and make the head the only part of the rail whose height moves.
+  //
+  // That slot's ACTION never changes — it expands, whether it is showing the mark or the chevron —
+  // so the swap is an affordance and not a mode. A touch device, which has no hover at all, still
+  // gets a mark it can tap to open the rail, and the accessible name says "expand" throughout.
+  //
+  // Going home is not on it. A rail that is already showing its nav has a Dashboard item two rows
+  // down; a hidden second action on a control whose glyph changes under the cursor is a guess.
+  const collapsedHead = collapsed && brand && onToggleCollapsed ? (
+    <Tooltip label={text.expand} side="right">
+      <button
+        aria-label={text.expand}
+        aria-expanded={false}
+        onClick={onToggleCollapsed}
+        className="group relative flex h-9 w-10 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-muted"
+      >
+        <span className="flex items-center transition-opacity group-hover:opacity-0 group-focus-visible:opacity-0 [&>img]:w-7 [&>svg]:w-7">{brand}</span>
+        <ChevronsRight
+          size={18}
+          aria-hidden="true"
+          className="absolute text-faint opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+        />
+      </button>
+    </Tooltip>
+  ) : null;
+
+  // The standalone toggle survives for the cases the swap cannot cover: expanded, where it is a
+  // small affordance at the head's right edge, and collapsed with no mark to swap.
+  const toggleButton = onToggleCollapsed && !collapsedHead && (
+    <button
+      aria-label={collapsed ? text.expand : text.collapse}
+      aria-expanded={!collapsed}
+      className={`shrink-0 rounded-lg text-faint transition-colors hover:bg-muted hover:text-foreground ${collapsed ? "flex h-9 w-10 items-center justify-center" : "p-1.5"}`}
+      onClick={onToggleCollapsed}
+    >
+      {collapsed ? <ChevronsRight size={18} aria-hidden="true" /> : <ChevronsLeft size={16} aria-hidden="true" />}
+    </button>
+  );
+  const railToggle = collapsed && toggleButton
+    ? <Tooltip label={text.expand} side="right">{toggleButton}</Tooltip>
+    : toggleButton;
+
   return (
     <div data-testid="app-shell" className="flex h-dvh overflow-hidden bg-app">
       <aside
@@ -150,14 +194,19 @@ export function AppShell({
           aria-label={text.sections}
           className="flex h-full flex-col overflow-hidden px-3 pb-3"
         >
-          <div className={`flex items-center py-4 ${collapsed ? "justify-center" : "justify-between px-1"}`}>
+          {/* Collapsed the head holds exactly one 36x40 slot, so it neither overflows the 50px
+              the rail leaves nor changes height between states. Everything the head has to say
+              collapsed is said by that one square. */}
+          <div className={`flex items-center py-4 ${collapsed ? "justify-center" : "justify-between"}`}>
             {/* Collapsed, the mark is all that is left of the head — a rail with no words
                 and no mark is an anonymous gutter, which is why it survives the collapse
                 while the words do not. */}
             {collapsed
-              ? brand && <span className="flex shrink-0 items-center">{brand}</span>
+              ? collapsedHead ?? (brand && (
+                <span className="flex h-9 w-10 shrink-0 items-center justify-center [&>img]:w-7 [&>svg]:w-7">{brand}</span>
+              ))
               : onHome ? (
-                <button onClick={onHome} className="flex min-w-0 items-center gap-2.5 rounded-lg text-start transition-opacity hover:opacity-70">
+                <button onClick={onHome} className="flex min-w-0 items-center gap-2.5 rounded-lg px-2.5 py-1 text-start transition-colors hover:bg-muted">
                   {brand && <span className="flex shrink-0 items-center">{brand}</span>}
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold">{title}</span>
@@ -165,7 +214,7 @@ export function AppShell({
                   </span>
                 </button>
               ) : (
-                <span className="flex min-w-0 items-center gap-2.5">
+                <span className="flex min-w-0 items-center gap-2.5 px-2.5 py-1">
                   {brand && <span className="flex shrink-0 items-center">{brand}</span>}
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold">{title}</span>
@@ -173,16 +222,7 @@ export function AppShell({
                   </span>
                 </span>
               )}
-            {onToggleCollapsed && (
-              <button
-                aria-label={collapsed ? text.expand : text.collapse}
-                aria-expanded={!collapsed}
-                className="shrink-0 rounded-lg p-1.5 text-faint transition-colors hover:bg-muted hover:text-foreground"
-                onClick={onToggleCollapsed}
-              >
-                {collapsed ? <ChevronsRight size={18} aria-hidden="true" /> : <ChevronsLeft size={16} aria-hidden="true" />}
-              </button>
-            )}
+            {railToggle}
           </div>
 
           {onSearch && (
