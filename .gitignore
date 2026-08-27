@@ -2,3 +2,8 @@ node_modules
 dist
 coverage
 .vite
+
+# Playwright writes actual/diff PNGs here on every run, update-visual.sh included — artefacts
+# of a run, never inputs to one.
+test-results/
+playwright-report/
