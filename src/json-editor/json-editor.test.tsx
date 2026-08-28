@@ -17,6 +17,17 @@ describe("the json editor subpath (RFC D6) — CodeMirror stays out of the main 
     expect(container.textContent).not.toContain('"a"');
   });
 
+  it("an EMPTY document is never a lint error — broken JSON still is", async () => {
+    // A blank editor is an invitation, not a mistake: no red dot on line 1 of nothing.
+    const empty = render(<JsonEditor value="" lint />);
+    const broken = render(<JsonEditor value='{"a":' lint />);
+    // CodeMirror's linter runs on a delay; the broken editor's marker is the clock.
+    await vi.waitFor(() => {
+      expect(broken.container.querySelector(".cm-lint-marker")).toBeTruthy();
+    }, { timeout: 3000 });
+    expect(empty.container.querySelector(".cm-lint-marker")).toBeNull();
+  });
+
   it("Beautify pretty-prints valid JSON and leaves templated bodies untouched", async () => {
     const onChange = vi.fn();
     render(<JsonField value='{"a":1}' onChange={onChange} />);
