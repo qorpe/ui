@@ -51,8 +51,12 @@ const extensions = (readOnly: boolean, onChange: ((v: string) => void) | undefin
   bracketMatching(),
   keymap.of([...defaultKeymap, ...historyKeymap, ...foldKeymap, indentWithTab]),
   json(),
-  // Bodies may hold template syntax ({{…}}), so linting is opt-out — no false parse errors.
-  ...(lint ? [linter(jsonParseLinter()), lintGutter()] : []),
+  // Bodies may hold template syntax ({{…}}), so linting is opt-out — no false parse
+  // errors. An EMPTY document is never an error either: a blank editor is an invitation,
+  // and a red parse dot on line 1 of nothing teaches only confusion.
+  ...(lint
+    ? [linter((view) => (view.state.doc.length === 0 ? [] : jsonParseLinter()(view))), lintGutter()]
+    : []),
   syntaxHighlighting(highlight),
   theme,
   EditorState.readOnly.of(readOnly),
