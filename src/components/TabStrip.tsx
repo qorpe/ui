@@ -80,16 +80,23 @@ export interface TabPanelProps {
   children: React.ReactNode;
   /** Must match the strip's `scope` — the two halves pair through the prefixed ids (B7). */
   scope?: string;
+  /**
+   * The panel's layout classes — a scrolling panel inside a flex column needs
+   * `min-h-0 flex-1 overflow-y-auto` and its own padding. Defaults to the strip's
+   * `pt-4`; passing a value REPLACES it (the ARIA pairing is untouched). Added for the
+   * family's second consumer, whose five tabbed screens are scroll layouts (2026-09-05).
+   */
+  className?: string;
 }
 
 /** The panel half of the pattern — labelled by its tab, hidden when it is not the one. */
-export function TabPanel({ id, activeId, children, scope }: TabPanelProps) {
+export function TabPanel({ id, activeId, children, scope, className = "pt-4" }: TabPanelProps) {
   if (id !== activeId) {
     return null;
   }
 
   return (
-    <div role="tabpanel" id={`panel-${scope ? `${scope}-` : ""}${id}`} aria-labelledby={`tab-${scope ? `${scope}-` : ""}${id}`} tabIndex={0} className="pt-4">
+    <div role="tabpanel" id={`panel-${scope ? `${scope}-` : ""}${id}`} aria-labelledby={`tab-${scope ? `${scope}-` : ""}${id}`} tabIndex={0} className={className}>
       {children}
     </div>
   );
