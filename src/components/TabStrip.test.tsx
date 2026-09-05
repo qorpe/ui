@@ -94,4 +94,23 @@ describe("TabStrip", () => {
     // meaning on its own.
     expect(screen.getByRole("tab", { name: /Jobs/ })).toBeInTheDocument();
   });
+
+  it("a panel carries its own layout classes when given, and the default padding when not", () => {
+    const { rerender } = render(
+      <TabPanel id="a" activeId="a" scope="s">
+        body
+      </TabPanel>,
+    );
+    expect(screen.getByRole("tabpanel")).toHaveClass("pt-4");
+    rerender(
+      <TabPanel id="a" activeId="a" scope="s" className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+        body
+      </TabPanel>,
+    );
+    const panel = screen.getByRole("tabpanel");
+    expect(panel).toHaveClass("min-h-0", "flex-1", "overflow-y-auto");
+    expect(panel).not.toHaveClass("pt-4");
+    // The ARIA pairing survives the class swap.
+    expect(panel).toHaveAttribute("aria-labelledby", "tab-s-a");
+  });
 });
