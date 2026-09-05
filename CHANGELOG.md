@@ -1,5 +1,11 @@
 # @qorpe/ui
 
+## 0.6.0
+
+### Minor Changes
+
+- d23bfbd: `TabPanel` accepts `className` (defaults to the previous `pt-4`): a scrolling panel inside a flex column can now carry `min-h-0 flex-1 overflow-y-auto` and its own padding without losing the ARIA pairing — the seam mockifyr's five tabbed screens need to move off their local Radix tabs.
+
 ## 0.5.2
 
 ### Patch Changes
