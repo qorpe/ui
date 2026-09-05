@@ -1,6 +1,6 @@
 {
   "name": "@qorpe/ui",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "The qorpe family UI kit: the ui-standard tokens, primitives and composites every qorpe console composes from.",
   "license": "Apache-2.0",
   "repository": {
