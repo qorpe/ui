@@ -35,6 +35,13 @@ the kit's API. Dark mode is class-driven (`.dark` on `<html>`).
 - Strings are props with English defaults — the kit ships no i18n framework; RTL via
   logical properties is an acceptance criterion for every component.
 
+## Working in this repository
+
+The delivery cycle is `.claude/cycle.md` — the same nine steps every repository in the family
+runs, with `.claude/skills/ui-change` saying what each one means here. The stop hook refuses
+to end a turn on a red typecheck, an undocumented export or an unpinned dependency; the visual,
+axe and coverage gates need a browser or a full run and stay in CI.
+
 ## Gates
 
 Live in CI: **G1** changeset (src change without a changeset fails) · **G2**
