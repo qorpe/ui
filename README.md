@@ -44,6 +44,12 @@ axe and coverage gates need a browser or a full run and stay in CI.
 
 ## Gates
 
+CI also runs on `changeset-release/**`, not only on `main` and pull requests: the version
+pull request is opened by the changesets bot with `GITHUB_TOKEN`, which GitHub deliberately
+does not let trigger `pull_request` workflows, so those pull requests were merging with no
+checks reported at all. G1 stays pull-request-only, correctly — the release branch consumes
+the changesets and has none to carry.
+
 Live in CI: **G1** changeset (src change without a changeset fails) · **G2**
 export-without-docs (`scripts/docs-gate.mjs` parses the barrel; every export needs a
 home in `gallery/docs-map.json`, whose demos the tests render) · **G3** axe on every

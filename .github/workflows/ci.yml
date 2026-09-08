@@ -2,7 +2,12 @@ name: ci
 
 on:
   push:
-    branches: [main]
+    # changeset-release/** is here on purpose. The version pull request is opened by the
+    # changesets bot with GITHUB_TOKEN, and GitHub deliberately does not trigger
+    # pull_request workflows for it — so #48 merged on 2026-09-05 with NO checks reported
+    # at all, and so did the releases before it. Running CI on the BRANCH restores the
+    # coverage without a personal access token or an app.
+    branches: [main, 'changeset-release/**']
   pull_request:
 
 jobs:
